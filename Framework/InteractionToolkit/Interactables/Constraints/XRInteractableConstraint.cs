@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
 
 namespace Framework
 {
@@ -28,7 +29,9 @@ namespace Framework
 			#endregion
 
 			#region Virtual Interface
-			public abstract void ConstrainTransform(ref Vector3 position, ref Quaternion rotation);
+			public abstract void ProcessConstraint(XRInteractionUpdateOrder.UpdatePhase updatePhase);
+
+			public abstract void Constrain(ref Vector3 position, ref Quaternion rotation);
 
             public abstract void ConstrainPhysics(Rigidbody rigidbody);
             #endregion

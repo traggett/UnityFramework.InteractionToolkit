@@ -10,9 +10,11 @@ namespace Framework
 		/// </summary>
 		public class XRSimpleInteractorConstraint : XRInteractorConstraint
 		{
+			#region Public Data
 			public Transform _attachTransform;
 			public bool _constrainPosition;
 			public bool _constrainRotation;
+			#endregion
 
 			#region XRInteractorConstraint
 			public override void ConstrainInteractor(XRBaseInteractor interactor, out bool constrainPosition, ref Vector3 position, out bool constrainRotation, ref Quaternion rotation)

@@ -7,6 +7,7 @@ namespace Framework
 {
 	namespace Interaction.Toolkit
 	{
+		#region Events
 		/// <summary>
 		/// <see cref="UnityEvent"/> that is invoked when Slider values changes.
 		/// </summary>
@@ -25,6 +26,7 @@ namespace Framework
 			/// </summary>
 			public float Value { get; set; }
 		}
+		#endregion
 
 		public class XRSimpleSliderConstraint : XRInteractableConstraint
 		{
@@ -37,8 +39,9 @@ namespace Framework
 			}
 			public SlideAxis _sliderAxis = SlideAxis.X;
 			public float _sliderSize = 1f;
-				
 			public SliderChangeEvent _sliderMovedEvent = new SliderChangeEvent();
+
+			protected float _previousNormalisedPosition = -1f;
 
 			public float NormalisedPosition
 			{
@@ -55,7 +58,31 @@ namespace Framework
 			#endregion
 
 			#region XRInteractableConstraint
-			public override void ConstrainTransform(ref Vector3 position, ref Quaternion rotation)
+			public override void ProcessConstraint(XRInteractionUpdateOrder.UpdatePhase updatePhase)
+			{
+				switch (updatePhase)
+				{
+					case XRInteractionUpdateOrder.UpdatePhase.Late:
+						{
+							float normalisedPosition = NormalisedPosition;
+
+							if (!Mathf.Approximately(normalisedPosition, _previousNormalisedPosition))
+							{
+								_previousNormalisedPosition = normalisedPosition;
+
+								SliderChangeEventArgs eventArgs = new SliderChangeEventArgs()
+								{
+									Value = normalisedPosition
+								};
+
+								_sliderMovedEvent?.Invoke(eventArgs);
+							}
+						}
+						break;
+				}
+			}
+
+			public override void Constrain(ref Vector3 position, ref Quaternion rotation)
 			{
 				Vector3 sliderspacePos = ToSliderSpacePos(position);
 				Vector3 localPos = this.transform.localPosition;
@@ -116,6 +143,7 @@ namespace Framework
 				}
 
 				rigidbody.velocity = FromSliderSpaceVector(localVelocity);
+				rigidbody.angularVelocity = Vector3.zero;
 			}
 			#endregion
 
@@ -123,42 +151,28 @@ namespace Framework
 			protected virtual void SetSliderSpacePosInstantaneous(float sliderspacePos)
 			{
 				Vector3 localSpacePos = this.transform.localPosition;
-				float previousSliderValue;
-
+				
 				switch (_sliderAxis)
 				{
 					case SlideAxis.X:
 						{
-							previousSliderValue = localSpacePos.x;
 							localSpacePos.x = sliderspacePos;
 						}
 						break;
 					case SlideAxis.Y:
 						{
-							previousSliderValue = localSpacePos.y;
 							localSpacePos.y = sliderspacePos;
 						}
 						break;
 					case SlideAxis.Z:
 					default:
 						{
-							previousSliderValue = localSpacePos.z;
 							localSpacePos.z = sliderspacePos;
 						}
 						break;
 				}
 
 				this.transform.localPosition = localSpacePos;
-
-				if (Mathf.Approximately(previousSliderValue, sliderspacePos))
-				{
-					SliderChangeEventArgs eventArgs = new SliderChangeEventArgs()
-					{
-						Value = Mathf.Clamp01(sliderspacePos / _sliderSize)
-					};
-
-					_sliderMovedEvent?.Invoke(eventArgs);
-				}
 			}
 
 			protected virtual void SetSliderSpacePosKinematic(Rigidbody rigidbody, float sliderspacePos)
@@ -195,14 +209,14 @@ namespace Framework
 				rigidbody.velocity = Vector3.zero;
 				rigidbody.MovePosition(position);
 
-				if (Mathf.Approximately(previousSliderValue, sliderspacePos))
+				if (!Mathf.Approximately(previousSliderValue, sliderspacePos))
 				{
 					SliderChangeEventArgs eventArgs = new SliderChangeEventArgs()
 					{
 						Value = Mathf.Clamp01(sliderspacePos / _sliderSize)
 					};
 
-					_sliderMovedEvent?.Invoke(eventArgs);
+					_sliderMovedEvent.Invoke(eventArgs);
 				}
 			}
 

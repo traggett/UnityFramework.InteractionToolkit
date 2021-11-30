@@ -7,6 +7,7 @@ namespace Framework
 {
 	namespace Interaction.Toolkit
 	{
+		#region Events
 		/// <summary>
 		/// <see cref="UnityEvent"/> that is invoked when Slider values changes.
 		/// </summary>
@@ -15,9 +16,6 @@ namespace Framework
 		{
 		}
 
-		/// <summary>
-		/// Event data associated with the event when an Interactor ends selecting an Interactable.
-		/// </summary>
 		public class FixedValueSliderChangeEventArgs : BaseInteractionEventArgs
 		{
 			/// <summary>
@@ -25,6 +23,7 @@ namespace Framework
 			/// </summary>
 			public int Index { get; set; }
 		}
+		#endregion
 
 		public class XRFixedValueSliderConstraint : XRSimpleSliderConstraint
 		{
@@ -54,11 +53,74 @@ namespace Framework
 
 			#region Private Data
 			private float _moveToFixedPosVelocity;
+			private int _previousSliderIndex = -1;
 			#endregion
 
 			#region XRInteractableConstraint
-			public override void ConstrainTransform(ref Vector3 position, ref Quaternion rotation)
+			public override void ProcessConstraint(XRInteractionUpdateOrder.UpdatePhase updatePhase)
 			{
+				switch (updatePhase)
+				{
+					case XRInteractionUpdateOrder.UpdatePhase.Dynamic:
+					case XRInteractionUpdateOrder.UpdatePhase.OnBeforeRender:
+						{
+							if (!Interactable.isSelected && Interactable.movementType == XRBaseInteractable.MovementType.Instantaneous)
+							{
+								//Move towards nearest allowed position
+								SetSliderSpacePosInstantaneous(MoveSliderTowardsNearestAllowedPosition());
+							}
+						}
+						break;
+					case XRInteractionUpdateOrder.UpdatePhase.Fixed:
+						{
+							if (!Interactable.isSelected && Interactable.movementType == XRBaseInteractable.MovementType.Kinematic)
+							{
+								//Move towards nearest allowed position
+								SetSliderSpacePosKinematic(Interactable.Rigidbody, MoveSliderTowardsNearestAllowedPosition());
+							}
+							else if (!Interactable.isSelected && Interactable.movementType == XRBaseInteractable.MovementType.VelocityTracking)
+							{
+								//TO DO!! Velocity tracking based movement
+							}
+						}
+						break;
+					case XRInteractionUpdateOrder.UpdatePhase.Late:
+						{
+							float normalisedPosition = NormalisedPosition;
+
+							if (!Mathf.Approximately(normalisedPosition, _previousNormalisedPosition))
+							{
+								_previousNormalisedPosition = normalisedPosition;
+
+								SliderChangeEventArgs eventArgs = new SliderChangeEventArgs()
+								{
+									Value = normalisedPosition
+								};
+
+								_sliderMovedEvent?.Invoke(eventArgs);
+							}
+
+							int sliderIndex = SliderIndex;
+
+							if (sliderIndex != _previousSliderIndex)
+							{
+								_previousSliderIndex = sliderIndex;
+
+								FixedValueSliderChangeEventArgs eventArgs = new FixedValueSliderChangeEventArgs()
+								{
+									Index = sliderIndex
+								};
+
+								_fixedValueSliderChanged?.Invoke(eventArgs);
+							}
+						}
+						break;
+				}
+			}
+
+			public override void Constrain(ref Vector3 position, ref Quaternion rotation)
+			{
+				//If interacting with the slider constrain between points with movement curve to make it feel like it 'sticky' around allowed values
 				if (Interactable.isSelected)
 				{
 					Vector3 sliderspacePos = ToSliderSpacePos(position);
@@ -94,63 +156,7 @@ namespace Framework
 				}
 				else
 				{
-					base.ConstrainTransform(ref position, ref rotation);
-
-					if (Interactable.movementType == XRBaseInteractable.MovementType.Instantaneous)
-					{
-						//Move towards nearest allowed position
-						SetSliderSpacePosInstantaneous(MoveSliderTowardsNearestAllowedPosition());
-					}
-				}
-			}
-
-			public override void ConstrainPhysics(Rigidbody rigidbody)
-			{
-				if (!Interactable.isSelected && (Interactable.movementType == XRBaseInteractable.MovementType.Kinematic || Interactable.movementType == XRBaseInteractable.MovementType.VelocityTracking))
-				{
-					SetSliderSpacePosKinematic(rigidbody, MoveSliderTowardsNearestAllowedPosition());
-				}
-				else
-				{
-					base.ConstrainPhysics(rigidbody);
-				}
-			}
-
-			protected override void SetSliderSpacePosInstantaneous(float pos)
-			{
-				int previousSliderIndex = SliderIndex;
-
-				base.SetSliderSpacePosInstantaneous(pos);
-
-				int sliderIndex = SliderIndex;
-
-				if (sliderIndex != previousSliderIndex)
-				{
-					FixedValueSliderChangeEventArgs eventArgs = new FixedValueSliderChangeEventArgs()
-					{
-						Index = sliderIndex
-					};
-
-					_fixedValueSliderChanged?.Invoke(eventArgs);
-				}
-			}
-
-			protected override void SetSliderSpacePosKinematic(Rigidbody rigidbody, float pos)
-			{
-				int previousSliderIndex = SliderIndex;
-
-				base.SetSliderSpacePosKinematic(rigidbody, pos);
-
-				int sliderIndex = SliderIndex;
-
-				if (sliderIndex != previousSliderIndex)
-				{
-					FixedValueSliderChangeEventArgs eventArgs = new FixedValueSliderChangeEventArgs()
-					{
-						Index = sliderIndex
-					};
-
-					_fixedValueSliderChanged?.Invoke(eventArgs);
+					base.Constrain(ref position, ref rotation);
 				}
 			}
 			#endregion
