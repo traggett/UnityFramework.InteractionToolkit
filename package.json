@@ -1,0 +1,13 @@
+{
+  "name": "com.clarky.unityframework.interaction.toolkit",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+	"com.clarky.unityframework": "1.0.0",
+    "com.unity.inputsystem": "1.0.0"
+  },
+  "displayName": "Unity Framework Interaction Toolkit",
+  "description": "Useful framework extenting Unity's Interaction Toolkit.",
+  "unity": "2020.1",
+  "author": "Clarky Cat (https://github.com/traggett)"
+}

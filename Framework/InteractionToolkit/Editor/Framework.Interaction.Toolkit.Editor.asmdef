@@ -1,0 +1,20 @@
+{
+    "name": "Framework.Interaction.Toolkit.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:5e3c49ac50d17ba4fb2151208f2d1993",
+        "GUID:fe685ec1767f73d42b749ea8045bfe43",
+        "GUID:190979c3ed6e41c448f5e9925429edf9"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
