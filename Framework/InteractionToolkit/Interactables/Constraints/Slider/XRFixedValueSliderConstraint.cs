@@ -82,6 +82,8 @@ namespace Framework
 							{
 								//TO DO!! Velocity tracking based movement
 							}
+
+							Constrain();
 						}
 						break;
 					case XRInteractionUpdateOrder.UpdatePhase.Late:
@@ -118,46 +120,38 @@ namespace Framework
 				}
 			}
 
-			public override void Constrain(ref Vector3 position, ref Quaternion rotation)
+			public override void ConstrainTargetTransform(ref Vector3 position, ref Quaternion rotation)
 			{
-				//If interacting with the slider constrain between points with movement curve to make it feel like it 'sticky' around allowed values
-				if (Interactable.isSelected)
-				{
-					Vector3 sliderspacePos = ToSliderSpacePos(position);
-					Vector3 localPos = this.transform.localPosition;
+				Vector3 sliderspacePos = ToSliderSpacePos(position);
+				Vector3 localPos = this.transform.localPosition;
 
-					switch (_sliderAxis)
-					{
-						case SlideAxis.X:
-							{
-								sliderspacePos.x = ConstrainSliderPosition(sliderspacePos.x);
-								sliderspacePos.y = localPos.y;
-								sliderspacePos.z = localPos.z;
-							}
-							break;
-						case SlideAxis.Y:
-							{
-								sliderspacePos.x = localPos.x;
-								sliderspacePos.y = ConstrainSliderPosition(sliderspacePos.y);
-								sliderspacePos.z = localPos.z;
-							}
-							break;
-						case SlideAxis.Z:
-							{
-								sliderspacePos.x = localPos.x;
-								sliderspacePos.y = localPos.y;
-								sliderspacePos.z = ConstrainSliderPosition(sliderspacePos.z);
-							}
-							break;
-					}
-
-					position = FromSliderSpacePos(sliderspacePos);
-					rotation = Quaternion.identity;
-				}
-				else
+				switch (_sliderAxis)
 				{
-					base.Constrain(ref position, ref rotation);
+					case SlideAxis.X:
+						{
+							sliderspacePos.x = ConstrainSliderPosition(sliderspacePos.x);
+							sliderspacePos.y = localPos.y;
+							sliderspacePos.z = localPos.z;
+						}
+						break;
+					case SlideAxis.Y:
+						{
+							sliderspacePos.x = localPos.x;
+							sliderspacePos.y = ConstrainSliderPosition(sliderspacePos.y);
+							sliderspacePos.z = localPos.z;
+						}
+						break;
+					case SlideAxis.Z:
+						{
+							sliderspacePos.x = localPos.x;
+							sliderspacePos.y = localPos.y;
+							sliderspacePos.z = ConstrainSliderPosition(sliderspacePos.z);
+						}
+						break;
 				}
+
+				position = FromSliderSpacePos(sliderspacePos);
+				rotation = Quaternion.identity;
 			}
 			#endregion
 

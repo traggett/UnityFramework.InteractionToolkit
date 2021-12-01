@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace Framework
@@ -10,15 +9,15 @@ namespace Framework
 		/// Component that allows constraining interactible movement
 		/// </summary>
 		[DisallowMultipleComponent]
-        [RequireComponent(typeof(XRAdvancedGrabInteractable))]
-        public abstract class XRInteractableConstraint : MonoBehaviour
-        {
+		[RequireComponent(typeof(XRAdvancedGrabInteractable))]
+		public abstract class XRInteractableConstraint : MonoBehaviour
+		{
 			#region Public Interface
 			public XRAdvancedGrabInteractable Interactable
-            {
-                get;
-                private set;
-            }
+			{
+				get;
+				private set;
+			}
 			#endregion
 
 			#region Unity Messages
@@ -29,12 +28,25 @@ namespace Framework
 			#endregion
 
 			#region Virtual Interface
-			public abstract void ProcessConstraint(XRInteractionUpdateOrder.UpdatePhase updatePhase);
+			public virtual void ProcessConstraint(XRInteractionUpdateOrder.UpdatePhase updatePhase)
+			{
+				switch (updatePhase)
+				{
+					case XRInteractionUpdateOrder.UpdatePhase.Fixed:
+						{
+							if (!Interactable.isSelected)
+							{
+								Constrain();
+							}
+						}
+						break;
+				}
+			}
+			
+			public abstract void ConstrainTargetTransform(ref Vector3 targetPosition, ref Quaternion targetRotation);
 
-			public abstract void Constrain(ref Vector3 position, ref Quaternion rotation);
-
-            public abstract void ConstrainPhysics(Rigidbody rigidbody);
-            #endregion
-        }
+			public abstract void Constrain();
+			#endregion
+		}
 	}
 }

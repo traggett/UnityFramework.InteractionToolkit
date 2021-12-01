@@ -15,12 +15,7 @@ namespace Framework
 			#endregion
 
 			#region XRInteractableConstraint
-			public override void ProcessConstraint(XRInteractionUpdateOrder.UpdatePhase updatePhase)
-			{
-				
-			}
-
-			public override void Constrain(ref Vector3 position, ref Quaternion rotation)
+			public override void ConstrainTargetTransform(ref Vector3 position, ref Quaternion rotation)
 			{
 				//XY movement could move handle??
 				//Or just rotation???
@@ -36,8 +31,10 @@ namespace Framework
 				//Then use XZ doorpositoin to move door
 			}
 
-			public override void ConstrainPhysics(Rigidbody rigidbody)
+			public override void Constrain()
 			{
+				Rigidbody rigidbody = Interactable.Rigidbody;
+
 				//TO DO!
 				//Allow rotation only!
 				rigidbody.velocity = Vector3.zero;

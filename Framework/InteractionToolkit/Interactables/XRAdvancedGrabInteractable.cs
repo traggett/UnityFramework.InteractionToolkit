@@ -511,6 +511,8 @@ namespace Framework
 			}
 			#endregion
 
+			public bool _constrainWhenNotSelected = true;
+
 			#region XRBaseInteractable
 			public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
 			{
@@ -613,7 +615,7 @@ namespace Framework
 				//If we have a constraint, constrian the target position and rotation
 				if (m_Constraint)
 				{
-					m_Constraint.Constrain(ref rawTargetWorldPosition, ref rawTargetWorldRotation);
+					m_Constraint.ConstrainTargetTransform(ref rawTargetWorldPosition, ref rawTargetWorldRotation);
 				}
 
 				// Apply smoothing (if configured)
