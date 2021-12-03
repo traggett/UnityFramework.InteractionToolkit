@@ -341,28 +341,6 @@ namespace Framework
 				get => m_Constraint;
 			}
 
-			[SerializeField]
-			private XRInteractorConstraint m_SelectedInteractorConstraint;
-
-			/// <summary>
-			/// Optional constraint applied to interactor whilst selected.
-			/// </summary>
-			public XRInteractorConstraint SelectedInteractorConstraint
-			{
-				get => m_SelectedInteractorConstraint;
-			}
-
-			[SerializeField]
-			private XRInteractorConstraint m_HoverInteractorConstraint;
-
-			/// <summary>
-			/// Optional constraint applied to interactor whilst hovered.
-			/// </summary>
-			public XRInteractorConstraint HoverInteractorConstraint
-			{
-				get => m_HoverInteractorConstraint;
-			}
-
 			public Rigidbody Rigidbody
 			{
 				get => m_Rigidbody;
@@ -511,8 +489,6 @@ namespace Framework
 			}
 			#endregion
 
-			public bool _constrainWhenNotSelected = true;
-
 			#region XRBaseInteractable
 			public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
 			{
@@ -528,7 +504,7 @@ namespace Framework
 					// During Fixed update we want to perform any physics-based updates (e.g., Kinematic or VelocityTracking).
 					case XRInteractionUpdateOrder.UpdatePhase.Fixed:
 						{
-							if (isSelected)
+							if (IsGrabbed())
 							{
 								if (m_CurrentMovementType == MovementType.Kinematic)
 									PerformKinematicUpdate(updatePhase);
@@ -541,7 +517,7 @@ namespace Framework
 					// During Dynamic update we want to perform any Transform-based manipulation (e.g., Instantaneous).
 					case XRInteractionUpdateOrder.UpdatePhase.Dynamic:
 						{
-							if (isSelected)
+							if (IsGrabbed())
 							{
 								UpdateTarget(Time.deltaTime);
 								SmoothVelocityUpdate();
@@ -555,7 +531,7 @@ namespace Framework
 					// During OnBeforeRender we want to perform any last minute Transform position changes before rendering (e.g., Instantaneous).
 					case XRInteractionUpdateOrder.UpdatePhase.OnBeforeRender:
 						{
-							if (isSelected)
+							if (IsGrabbed())
 							{
 								UpdateTarget(Time.deltaTime);
 
@@ -596,6 +572,21 @@ namespace Framework
 			#endregion
 
 			#region Private Functions
+			private bool IsGrabbed()
+			{
+				if (isSelected)
+				{
+					if (selectingInteractor is IXRGrabInteractor grabInteractor)
+					{
+						return grabInteractor.IsGrabbing();
+					}
+
+					return true;
+				}
+
+				return false;
+			}
+
 			private Vector3 GetWorldAttachPosition(XRBaseInteractor interactor)
 			{
 				return interactor.attachTransform.position + interactor.attachTransform.rotation * m_InteractorLocalPosition;

@@ -122,71 +122,74 @@ namespace Framework
 			{
 				Rigidbody rigidbody = Interactable.Rigidbody;
 
-				Vector3 localPos = this.transform.localPosition;
-				Vector3 localVelocity = ToSliderSpaceVector(rigidbody.velocity);
-
-				switch (_sliderAxis)
+				if (!rigidbody.IsSleeping())
 				{
-					case SlideAxis.X:
-						{
-							localVelocity.y = 0f;
-							localVelocity.z = 0f;
+					Vector3 localPos = this.transform.localPosition;
+					Vector3 localVelocity = ToSliderSpaceVector(rigidbody.velocity);
 
-							if (localPos.x < 0f)
+					switch (_sliderAxis)
+					{
+						case SlideAxis.X:
 							{
-								localPos.x = 0f;
-								//TO DO! reverse angular velocity? Dampen it?
-							}
+								localVelocity.y = 0f;
+								localVelocity.z = 0f;
 
-							if (localPos.x > _sliderSize)
-							{
-								localPos.x = _sliderSize;
-								//TO DO! reverse angular velocity? Dampen it?
-							}
-						}
-						break;
-					case SlideAxis.Y:
-						{
-							localVelocity.x = 0f;
-							localVelocity.z = 0f;
+								if (localPos.x < 0f)
+								{
+									localPos.x = 0f;
+									//TO DO! reverse angular velocity? Dampen it?
+								}
 
-							if (localPos.y < 0f)
-							{
-								localPos.y = 0f;
-								//TO DO! reverse angular velocity? Dampen it?
+								if (localPos.x > _sliderSize)
+								{
+									localPos.x = _sliderSize;
+									//TO DO! reverse angular velocity? Dampen it?
+								}
 							}
+							break;
+						case SlideAxis.Y:
+							{
+								localVelocity.x = 0f;
+								localVelocity.z = 0f;
 
-							if (localPos.y > _sliderSize)
-							{
-								localPos.y = _sliderSize;
-								//TO DO! reverse angular velocity? Dampen it?
-							}
-						}
-						break;
-					case SlideAxis.Z:
-						{
-							localVelocity.x = 0f;
-							localVelocity.y = 0f;
+								if (localPos.y < 0f)
+								{
+									localPos.y = 0f;
+									//TO DO! reverse angular velocity? Dampen it?
+								}
 
-							if (localPos.z < 0f)
-							{
-								localPos.z = 0f;
-								//TO DO! reverse angular velocity? Dampen it?
+								if (localPos.y > _sliderSize)
+								{
+									localPos.y = _sliderSize;
+									//TO DO! reverse angular velocity? Dampen it?
+								}
 							}
+							break;
+						case SlideAxis.Z:
+							{
+								localVelocity.x = 0f;
+								localVelocity.y = 0f;
 
-							if (localPos.z > _sliderSize)
-							{
-								localPos.z = _sliderSize;
-								//TO DO! reverse angular velocity? Dampen it?
+								if (localPos.z < 0f)
+								{
+									localPos.z = 0f;
+									//TO DO! reverse angular velocity? Dampen it?
+								}
+
+								if (localPos.z > _sliderSize)
+								{
+									localPos.z = _sliderSize;
+									//TO DO! reverse angular velocity? Dampen it?
+								}
 							}
-						}
-						break;
+							break;
+					}
+
+					this.transform.localPosition = localPos;
+
+					rigidbody.velocity = FromSliderSpaceVector(localVelocity);
+					rigidbody.angularVelocity = Vector3.zero;
 				}
-
-				this.transform.localPosition = localPos;
-
-				rigidbody.velocity = FromSliderSpaceVector(localVelocity);
-				rigidbody.angularVelocity = Vector3.zero;
 			}
 			#endregion
 

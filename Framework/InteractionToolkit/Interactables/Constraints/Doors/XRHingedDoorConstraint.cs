@@ -37,37 +37,42 @@ namespace Framework
 			{
 				Rigidbody rigidbody = Interactable.Rigidbody;
 
-				//Don't allow any positional velocity
-				rigidbody.velocity = Vector3.zero;
-
-				//Only allow angular velocity around pivot
-				Vector3 localAngularVel = ToDoorSpaceVector(rigidbody.angularVelocity);
-				localAngularVel.x = 0f;
-				localAngularVel.z = 0f;
-
-				//Find door rotation 
-				float localAngle = MathUtils.DegreesTo180Range(this.transform.localRotation.eulerAngles.y);
-
-				//If rotated beyond min/max limits then reverse angular velocity and clamp the rotation
-				if (localAngle < _minAngle)
+				if (!rigidbody.IsSleeping())
 				{
-					localAngle = _minAngle;
+					//Don't allow any positional velocity
+					rigidbody.velocity = Vector3.zero;
 
-					//TO DO! reverse angular velocity? Damen it?
-					//Or trigger event so door can stay shut / trigger sound effects??
+					//Only allow angular velocity around pivot
+					Vector3 localAngularVel = ToDoorSpaceVector(rigidbody.angularVelocity);
+					localAngularVel.x = 0f;
+					localAngularVel.z = 0f;
+
+					//Find door rotation 
+					float localAngle = MathUtils.DegreesTo180Range(this.transform.localRotation.eulerAngles.y);
+
+					//If rotated beyond min/max limits then reverse angular velocity and clamp the rotation
+					if (localAngle < _minAngle)
+					{
+						localAngle = _minAngle;
+
+						//Reverse angular velocity?
+						//TO DO - dampen or allow the door locking shut??
+						localAngularVel.y = Mathf.Abs(localAngularVel.y);
+					}
+
+					if (localAngle > _maxAngle)
+					{
+						localAngle = _maxAngle;
+
+						//Reverse angular velocity?
+						//TO DO - dampen or allow the door locking shut??
+						localAngularVel.y = -Mathf.Abs(localAngularVel.y);
+					}
+
+					this.transform.localRotation = Quaternion.Euler(0f, localAngle, 0f);
+
+					rigidbody.angularVelocity = FromDoorSpaceVector(localAngularVel);
 				}
-
-				if (localAngle > _maxAngle)
-				{
-					localAngle = _maxAngle;
-
-					//TO DO! reverse angular velocity? Damen it?
-					//Or trigger event so door can stay shut / trigger sound effects??
-				}
-
-				this.transform.localRotation = Quaternion.Euler(0f, localAngle, 0f);
-
-				rigidbody.angularVelocity = FromDoorSpaceVector(localAngularVel);
 			}
 			#endregion
 

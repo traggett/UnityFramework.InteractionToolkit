@@ -10,10 +10,13 @@ namespace Framework
 		/// <summary>
 		/// First person gesture based interactor
 		/// </summary>
-		public class XRFirstPersonInteractor : XRBaseControllerInteractor
+		public class XRFirstPersonInteractor : XRBaseControllerInteractor, IXRGrabInteractor
 		{
 			#region Public Data
 			public Transform _visuals;
+
+			public bool _constrainSelected = true;
+			public bool _constrainHovered = true;
 
 			public float _maxSelectedConstraintDistance = 0.25f;
 			public float _maxSelectedConstraintRotation = 90f;
@@ -23,7 +26,6 @@ namespace Framework
 
 			public float _snapToConstraintsTime = 0.2f;
 			public float _releaseFromConstraintsTime = 0.3f;
-
 
 			public LayerMask _raycastMask = -1;
 			public QueryTriggerInteraction _raycastTriggerInteraction;
@@ -49,19 +51,36 @@ namespace Framework
 			private int _raycastHitsCount;
 			private readonly RaycastHit[] _raycastHits = new RaycastHit[k_MaxRaycastHits];
 
-			private float _constrainAmount;
 			private bool _returningFromConstraints;
 			#endregion
 
-			#region Public Interface
-			public void SetAttachedPosition(Vector3 worldPosition)
-			{
-				_visuals.transform.position = worldPosition;
-			}
 
-			public void SetAttachedRotation(Quaternion worldRotation)
+
+			//Ok so when interacting....
+
+			//Want transition time (eg move hand to door knob)
+			//Then hand is positioned just on interactable.
+
+			//So when start interacting, position on interactor.
+
+			//Then do nothing? 
+			//Allow gestures???
+
+			//eg door - moving mouse in direction of door will open it??
+			//maybe play animation and release with velocity - driven by gesture speed.
+
+			//What about non constrained objects???
+			//eg picking up paper..
+			//Want transition but position object at ideal pick up pos?? (realtive to player camera)
+
+			//Dont allow camera movement or controls whilst interacting???
+			//So locked in, maybe pressing back will exit the interaction too.
+
+
+			#region IXRGrabInteractor
+			public bool IsGrabbing()
 			{
-				_visuals.transform.rotation = worldRotation;
+				return true;
 			}
 			#endregion
 
@@ -84,6 +103,8 @@ namespace Framework
 
 						if (interactable != null)
 						{
+
+
 							//First find interaction point or line in screen space
 
 							//Check it overlaps with screen space interaciton zone (circle at centre of screen)./
@@ -111,13 +132,16 @@ namespace Framework
 				return !_returningFromConstraints && base.CanSelect(interactable) && (xrController.selectInteractionState.activatedThisFrame || selectTarget == interactable);
 			}
 
-			protected override void OnSelectEntered(SelectEnterEventArgs args)
+			protected override void OnSelectEntering(SelectEnterEventArgs args)
 			{
-				base.OnSelectEntered(args);
-
-				_constrainAmount = 0f;
+				base.OnSelectEntering(args);
 			}
 
+			protected override void OnSelectExiting(SelectExitEventArgs args)
+			{
+				base.OnSelectExiting(args);
+
+			}
 
 			public override void ProcessInteractor(XRInteractionUpdateOrder.UpdatePhase updatePhase)
 			{
@@ -127,8 +151,6 @@ namespace Framework
 				{
 					case XRInteractionUpdateOrder.UpdatePhase.Dynamic:
 						{
-							UpdateConstraining(Time.deltaTime);
-							
 							if (selectTarget == null)
 							{
 								UpdateRaycastHits();
@@ -139,16 +161,9 @@ namespace Framework
 							}
 						}
 						break;
-					case XRInteractionUpdateOrder.UpdatePhase.OnBeforeRender:
-						{
-							UpdateConstraining(Time.deltaTime);
-						}
-						break;
 				}
 			}
 			#endregion
-
-
 
 			#region Private Functions
 			private static int SortRayCasts(RaycastHit a, RaycastHit b)
@@ -210,127 +225,6 @@ namespace Framework
 				coneCastHits = coneCastHitList.ToArray();
 
 				return coneCastHits;
-			}
-
-			private void UpdateConstraining(float deltaTime)
-			{
-				if (_visuals != null)
-				{
-					if (selectTarget is XRAdvancedGrabInteractable selectedGrabInteractable && selectedGrabInteractable.SelectedInteractorConstraint != null)
-					{
-						ConstrainToInteractable(selectedGrabInteractable.SelectedInteractorConstraint, deltaTime);
-
-						//If constraints are no longer ok cancel constraining
-						if (_constrainAmount > 0f && !AreConstraintsOk(_maxSelectedConstraintDistance, _maxSelectedConstraintRotation))
-						{
-							CancelConstraining();
-						}
-					}
-					else
-					{
-						FreeFromConstraints(deltaTime);
-					}
-				}
-			}
-
-			private void ConstrainToInteractable(XRInteractorConstraint interactorConstraint, float deltaTime)
-			{
-				if (_snapToConstraintsTime > 0f && _constrainAmount < 1f)
-				{
-					_constrainAmount += deltaTime / _snapToConstraintsTime;
-				}
-				else
-				{
-					_constrainAmount = 1f;
-				}
-
-				Vector3 constrainedPosition = this.transform.position;
-				Quaternion constrainedRotation = this.transform.rotation;
-
-				interactorConstraint.ConstrainInteractor(this, out bool constrainPosition, ref constrainedPosition, out bool constrainRotation, ref constrainedRotation);
-
-				//Adjust constriants so attach transform is placed at position rather than root
-				if (constrainRotation)
-				{
-					constrainedRotation *= attachTransform.localRotation;
-				}
-
-				if (constrainPosition)
-				{
-					constrainedPosition -= (attachTransform.rotation * attachTransform.localPosition);
-				}
-
-				if (_constrainAmount >= 1f)
-				{
-					_visuals.transform.position = constrainedPosition;
-					_visuals.transform.rotation = constrainedRotation;
-				}
-				else
-				{
-					_visuals.transform.position = Vector3.Lerp(_visuals.transform.position, constrainedPosition, _constrainAmount);
-					_visuals.transform.rotation = Quaternion.Slerp(_visuals.transform.rotation, constrainedRotation, _constrainAmount);
-				}				
-			}
-
-			private void FreeFromConstraints(float deltaTime)
-			{
-				if (_constrainAmount > 0f)
-				{
-					if (_releaseFromConstraintsTime > 0f)
-					{
-						_constrainAmount -= deltaTime / _releaseFromConstraintsTime;
-
-						if (_constrainAmount <= 0f)
-						{
-							_constrainAmount = 0f;
-							_returningFromConstraints = false;
-						}
-					}
-					else
-					{
-						_constrainAmount = 0f;
-						_returningFromConstraints = false;
-					}
-
-					_visuals.transform.localPosition = Vector3.Lerp(Vector3.zero, _visuals.transform.localPosition, _constrainAmount);
-					_visuals.transform.localRotation = Quaternion.Slerp(Quaternion.identity, _visuals.transform.localRotation, _constrainAmount);
-				}
-			}
-
-			private bool AreConstraintsOk(float maxDist, float maxAngle)
-			{
-				//Check distance
-				float distance = Vector3.Distance(_visuals.transform.position, this.transform.position);
-
-				if (distance > maxDist)
-				{
-					return false;
-				}
-
-				//Check rotation
-				float angle = Quaternion.Angle(_visuals.rotation, this.transform.rotation);
-
-				if (angle > maxAngle)
-				{
-					return false;
-				}
-
-				return true;
-			}
-
-			private void CancelConstraining()
-			{
-				_returningFromConstraints = true;
-
-				if (selectTarget != null)
-				{
-					interactionManager.SelectCancel(this, selectTarget);
-				}
-
-				for (int i = 0; i < hoverTargets.Count; i++)
-				{
-					interactionManager.HoverCancel(this, hoverTargets[i]);
-				}
 			}
 			#endregion
 		}
