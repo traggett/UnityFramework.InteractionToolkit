@@ -60,7 +60,7 @@ namespace Framework
 						_pose._worldRotation *= attachTransform.localRotation;
 					}
 
-					_pose._pose = _animationPose;
+					_pose._animation = _animationPose;
 
 					return _pose;
 				}

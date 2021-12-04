@@ -6,6 +6,7 @@ namespace Framework
 	{
 		namespace XR
 		{
+
 			public class XRSimpleHandPoser : XRHandPoser
 			{
 				#region Public Data
@@ -43,7 +44,7 @@ namespace Framework
 						_pose._worldPosition -= (attachTransform.rotation * attachTransform.localPosition);
 					}
 
-					_pose._pose = _animationPose;
+					_pose._animation = _animationPose;
 
 					return _pose;
 				}
