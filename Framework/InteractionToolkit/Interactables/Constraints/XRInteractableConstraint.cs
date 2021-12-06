@@ -25,6 +25,20 @@ namespace Framework
 			{
 				Interactable = GetComponent<XRAdvancedGrabInteractable>();
 			}
+
+			protected virtual void OnDrawGizmos()
+			{
+				Gizmos.color = new Color(0.75f, 0.75f, 0.75f);
+				DebugDraw(false);
+			}
+
+			protected virtual void OnDrawGizmosSelected()
+			{
+				Gizmos.color = Color.green;
+				Gizmos.matrix = this.transform.parent != null ? this.transform.parent.localToWorldMatrix : Matrix4x4.identity;
+
+				DebugDraw(true);
+			}
 			#endregion
 
 			#region Virtual Interface
@@ -46,6 +60,11 @@ namespace Framework
 			public abstract void ConstrainTargetTransform(ref Vector3 targetPosition, ref Quaternion targetRotation);
 
 			public abstract void Constrain();
+
+			public virtual void DebugDraw(bool selected)
+			{
+
+			}
 			#endregion
 		}
 	}

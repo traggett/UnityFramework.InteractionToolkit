@@ -9,16 +9,34 @@ namespace Framework
 			public class XRSphericalDistanceHandPoser : XRHandPoser
 			{
 				#region Public Data
-				public Transform _attachTransform;
+				/// <summary>
+				/// Should the interacting Hand's position be clamped to this gameobjects world position?
+				/// </summary>
 				public bool _constrainPosition;
+				/// <summary>
+				/// Should the interacting Hand's rotation be clamped to this gameobjects world rotation?
+				/// </summary>
 				public bool _constrainRotation;
+				/// <summary>
+				/// Should the interacting Hand be constrained to the surface of the sphere? If not it will be constrained to be inside it instead.
+				/// </summary
 				public bool _constrainToSurface;
+				/// <summary>
+				/// The radius of the sphere.
+				/// </summary
 				public float _radius;
-				public AnimationClip _animationPose;
+				/// <summary>
+				/// Optional animation that will play on the interacting Hand if it's the left hand.
+				/// </summary>
+				public AnimationClip _leftHandPoseAnimation;
+				/// <summary>
+				/// Optional animation that will play on the interacting Hand if it's the right hand.
+				/// </summary>
+				public AnimationClip _rightHandPoseAnimation;
 				#endregion
 
 				#region Private Data
-				private XRHandPose _pose = new XRHandPose();
+				private readonly XRHandPose _pose = new XRHandPose();
 				#endregion
 
 				#region XRHandPoser
@@ -60,7 +78,14 @@ namespace Framework
 						_pose._worldRotation *= attachTransform.localRotation;
 					}
 
-					_pose._animation = _animationPose;
+					if (interactor.HandVisuals.XRNode == UnityEngine.XR.XRNode.LeftHand)
+					{
+						_pose._animation = _leftHandPoseAnimation;
+					}
+					else
+					{
+						_pose._animation = _rightHandPoseAnimation;
+					}
 
 					return _pose;
 				}

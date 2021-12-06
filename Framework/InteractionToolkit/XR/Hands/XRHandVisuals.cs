@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.XR;
 
 namespace Framework
 {
@@ -12,9 +13,16 @@ namespace Framework
 			/// </summary>
 			public abstract class XRHandVisuals : MonoBehaviour
 			{
+				public abstract XRNode XRNode
+				{
+					get;
+				}
+
 				public abstract void ApplyOverridePose(XRHandPose handPose);
 
 				public abstract void ClearOverridePose(XRHandPose handPose);
+
+				public abstract bool IsEnteringOverridePose();
 
 				public abstract bool IsReturningFromOverridePose();
 			}

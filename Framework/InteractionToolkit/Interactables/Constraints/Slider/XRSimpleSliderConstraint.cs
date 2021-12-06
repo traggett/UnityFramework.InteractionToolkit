@@ -191,6 +191,27 @@ namespace Framework
 					rigidbody.angularVelocity = Vector3.zero;
 				}
 			}
+
+			public override void DebugDraw(bool selected)
+			{
+				Vector3 sliderAxis;
+
+				switch (_sliderAxis)
+				{
+					case SlideAxis.X:
+						sliderAxis = Vector3.right;
+						break;
+					case SlideAxis.Y:
+						sliderAxis = Vector3.up;
+						break;
+					case SlideAxis.Z:
+					default:
+						sliderAxis = Vector3.forward;
+						break;
+				}
+
+				Gizmos.DrawLine(Vector3.zero, sliderAxis * _sliderSize);
+			}
 			#endregion
 
 			#region Protected Functions

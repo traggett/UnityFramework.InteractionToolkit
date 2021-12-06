@@ -19,23 +19,29 @@ namespace Framework
 				/// The hand visuals associated with this interactor.
 				/// This interactor will set override hand poses on it whilst directly interacting with interactables.
 				/// </summary>
-				public XRHandVisuals _handVisuals;
+				public XRHandVisuals HandVisuals
+				{
+					get { return _handVisuals; }
+				}
 
 				/// <summary>
 				/// The max distance the hand can visually be from the interactors actual position whilst selecting an interactable.
 				/// When an interactable wants the hand to be in a pose beyond this disance, the selection will be cancelled.
 				/// </summary>
 				public float _maxSelectedOverridePoseDistance = 0.25f;
+				
 				/// <summary>
 				/// The max rotation difference the hand can visually be from the interactors actual rotation whilst selecting an interactable.
 				/// When an interactable wants the hand to be in a pose beyond this rotation, the selection will be cancelled.
 				/// </summary>
 				public float _maxSelectedOverridePoseRotation = 90f;
+				
 				/// <summary>
 				/// The max distance the hand can visually be from the interactors actual position whilst hovering over an interactable.
 				/// When an interactable wants the hand to be in a pose beyond this disance, the hover will be cancelled.
 				/// </summary>
 				public float _maxHoveredOverridePoseDistance = 0.15f;
+				
 				/// <summary>
 				/// The max rotation difference the hand can visually be from the interactors actual rotation whilst hovering over an interactable.
 				/// When an interactable wants the hand to be in a pose beyond this rotation, the hover will be cancelled.
@@ -44,6 +50,8 @@ namespace Framework
 				#endregion
 
 				#region Private Data
+				[SerializeField]
+				private XRHandVisuals _handVisuals;
 				private XRHandPoser _currentSelectedPoser;
 				private XRHandPoser _currentHoveredPoser;
 				#endregion
@@ -77,8 +85,8 @@ namespace Framework
 				#region IXRGrabInteractor
 				public bool IsGrabbing()
 				{
-					//Only count as grabbing an object when constrained?
-					return true;
+					//Only count as grabbing when not moving from or to and override pose
+					return !_handVisuals.IsEnteringOverridePose() && !_handVisuals.IsEnteringOverridePose();
 				}
 				#endregion
 

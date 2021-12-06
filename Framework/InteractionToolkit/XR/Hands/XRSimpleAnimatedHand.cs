@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.XR;
 
 namespace Framework
 {
@@ -15,23 +16,26 @@ namespace Framework
 				/// </summary>
 				public const string ANIM_NAME_OVERRIDE_POSE = "Pose";
 				/// <summary>
-				/// Animation layer name for index finger pointing
+				/// Animation param name for a float used for clenching the fist.
 				/// </summary>
-				public const string ANIM_LAYER_NAME_POINT = "Point Layer";
-				/// <summary>
-				/// Animation layer name for thumb pointing
-				/// </summary>
-				public const string ANIM_LAYER_NAME_THUMB = "Thumb Layer";
+				public const string ANIM_PARAM_NAME_FIST = "Fist";
 				/// <summary>
 				/// Animation param name for a float used for clenching the fist.
 				/// </summary>
-				public const string ANIM_PARAM_NAME_FLEX = "Flex";
+				public const string ANIM_PARAM_NAME_POINT = "Point";
 				/// <summary>
-				/// Animation param name for a bool used for applying an override pose.
+				/// Animation param name for a int used for applying an override pose.
 				/// </summary>
 				public const string ANIM_PARAM_NAME_POSE = "Pose";
-				
+
+				public const string ANIM_LAYER_NAME_POSE = "Pose"; 
+
 				public const float INPUT_RATE_CHANGE = 20.0f;
+
+				/// <summary>
+				/// The node this hand represents (should either be XRNode.LeftHand or XRNode.RightHand)
+				/// </summary>
+				public XRNode _handNode = XRNode.RightHand;
 
 				/// <summary>
 				/// The root of the hands visuals.
@@ -47,7 +51,12 @@ namespace Framework
 				/// <summary>
 				/// Input Action used to drive grab animations.
 				/// </summary>
-				public InputActionProperty _grabAction;
+				public InputActionProperty _grabAmountAction;
+
+				/// <summary>
+				/// Optional Input Action used to drive fingers clapsed or not
+				/// </summary>
+				public InputActionProperty _grabTouchAction;
 
 				/// <summary>
 				/// Optional Input Action used to drive thumb up/down animations.
@@ -70,9 +79,9 @@ namespace Framework
 				#endregion
 
 				#region Private Data
-				private int _animLayerIndexThumb = -1;
-				private int _animLayerIndexPoint = -1;
-				private int _animParamIndexClenchFist = -1;
+				private int _animLayerIndexPose = -1;
+				private int _animParamIndexFist = -1;
+				private int _animParamIndexPoint = -1;
 				private int _animParamIndexPose = -1;
 
 				private AnimatorOverrideController _animatorOverrideController;
@@ -94,9 +103,9 @@ namespace Framework
 				private void Start()
 				{
 					// Get animator layer indices by name, for later use switching between hand visuals
-					_animLayerIndexPoint = _animator.GetLayerIndex(ANIM_LAYER_NAME_POINT);
-					_animLayerIndexThumb = _animator.GetLayerIndex(ANIM_LAYER_NAME_THUMB);
-					_animParamIndexClenchFist = Animator.StringToHash(ANIM_PARAM_NAME_FLEX);
+					_animLayerIndexPose = _animator.GetLayerIndex(ANIM_LAYER_NAME_POSE);
+					_animParamIndexFist = Animator.StringToHash(ANIM_PARAM_NAME_FIST);
+					_animParamIndexPoint = Animator.StringToHash(ANIM_PARAM_NAME_POINT);
 					_animParamIndexPose = Animator.StringToHash(ANIM_PARAM_NAME_POSE);
 
 					_animatorOverrideController = new AnimatorOverrideController(_animator.runtimeAnimatorController);
@@ -114,6 +123,14 @@ namespace Framework
 				#endregion
 
 				#region XRHand
+				public override XRNode XRNode
+				{
+					get
+					{
+						return _handNode;
+					}
+				}
+
 				public override void ApplyOverridePose(XRHandPose handPose)
 				{
 					if (_overridePose != handPose)
@@ -129,6 +146,11 @@ namespace Framework
 					{
 						_overridePose = null;
 					}
+				}
+
+				public override bool IsEnteringOverridePose()
+				{
+					return _overridePose != null && _overridePoseLerp < 1f;
 				}
 
 				public override bool IsReturningFromOverridePose()
@@ -148,33 +170,19 @@ namespace Framework
 				private void UpdateInputAnimations()
 				{
 					// Clench fist amount
-					float grabAmount = GetFloat(_grabAction.action);
-					_animator.SetFloat(_animParamIndexClenchFist, grabAmount);
-
-
-					//TO DO! optional grab is touching????
-
+					if (_animParamIndexFist != -1)
+					{
+						float grabAmount = GetFloat(_grabAmountAction.action);
+						_animator.SetFloat(_animParamIndexFist, grabAmount);
+					}
 
 					// Index finger point amount
 					bool isPointing = !IsPressed(_indexFingerTouchAction.action);
 					_pointBlend = InputValueRateChange(isPointing, _pointBlend);
 
-					if (_animLayerIndexPoint != -1)
+					if (_animParamIndexPoint != -1)
 					{
-						// Multiply by grab amount so don't point whilst clenching fist.
-						float point = _pointBlend * grabAmount;
-						_animator.SetLayerWeight(_animLayerIndexPoint, point);
-					}
-
-					// Thumbs up amount
-					bool isGivingThumbsUp = !IsPressed(_thumbTouchAction.action);
-					_thumbsUpBlend = InputValueRateChange(isGivingThumbsUp, _thumbsUpBlend);
-
-					if (_animLayerIndexThumb != -1)
-					{
-						// Multiply by grab amount so don't thumb up whilst clenching fist.
-						float thumbsUp = _pointBlend * grabAmount;
-						_animator.SetLayerWeight(_animLayerIndexThumb, thumbsUp);
+						_animator.SetFloat(_animParamIndexPoint, _pointBlend);
 					}
 				}
 
@@ -183,16 +191,7 @@ namespace Framework
 					//Transiton to / from override pose
 					if (_overridePose != null)
 					{
-						//Apply animation
-						if (_overridePose._animation != null)
-						{
-							_animatorOverrideController[ANIM_NAME_OVERRIDE_POSE] = _overridePose._animation;
-							_animator.SetBool(_animParamIndexPose, true);
-						}
-						else
-						{
-							_animator.SetBool(_animParamIndexPose, false);
-						}
+						SetOverridePoseAnimation(_overridePose._animation);
 
 						//Update pose lerp
 						if (_overridePoseLerp < 1f)
@@ -251,7 +250,7 @@ namespace Framework
 					else
 					{
 						//Cancel override pose animation
-						_animator.SetBool(_animParamIndexPose, false);
+						SetOverridePoseAnimation(null);
 
 						//Update pose lerp
 						if (_overridePoseLerp > 0f)
@@ -294,6 +293,23 @@ namespace Framework
 					}
 
 					return 0f;
+				}
+
+				private void SetOverridePoseAnimation(AnimationClip animationClip)
+				{
+					/* TO DO set next overide pose animation from clip, lerp layer weight up
+
+
+					//Apply animation - TO DO potentiall have a buffer of two poses that can animate between if they change
+					if (_overridePose._animation != null)
+					{
+						_animatorOverrideController[ANIM_NAME_OVERRIDE_POSE] = _overridePose._animation;
+						_animator.SetBool(_animParamIndexPose, true);
+					}
+					else
+					{
+						_animator.SetBool(_animParamIndexPose, false);
+					}*/
 				}
 				#endregion
 			}

@@ -153,6 +153,40 @@ namespace Framework
 				position = FromSliderSpacePos(sliderspacePos);
 				rotation = Quaternion.identity;
 			}
+			
+			public override void DebugDraw(bool selected)
+			{
+				Vector3 sliderAxis;
+				Vector3 notchAxis;
+
+				switch (_sliderAxis)
+				{
+					case SlideAxis.X:
+						sliderAxis = Vector3.right;
+						notchAxis = Vector3.forward;
+						break;
+					case SlideAxis.Y:
+						sliderAxis = Vector3.up;
+						notchAxis = Vector3.right;
+						break;
+					case SlideAxis.Z:
+					default:
+						sliderAxis = Vector3.forward;
+						notchAxis = Vector3.right;
+						break;
+				}
+
+				Gizmos.DrawLine(Vector3.zero, sliderAxis * _sliderSize);
+
+				float notchSize = _sliderSize * 0.1f;
+
+				for (int i = 0; i < _allowedSliderPositions.Length; i++)
+				{
+					Vector3 pos = sliderAxis * _sliderSize * _allowedSliderPositions[i];
+
+					Gizmos.DrawLine(pos - notchAxis * notchSize, pos + notchAxis * notchSize);
+				}
+			}
 			#endregion
 
 			#region Private Functions

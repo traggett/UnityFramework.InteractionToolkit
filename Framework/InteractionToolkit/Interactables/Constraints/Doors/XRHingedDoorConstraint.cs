@@ -108,6 +108,11 @@ namespace Framework
 
 				return doorSpaceRotation;
 			}
+
+			public override void DebugDraw(bool selected)
+			{
+				Debug.DebugDrawing.DrawWireArc(Vector3.zero, _minAngle, _maxAngle, 1f);
+			}
 			#endregion
 		}
 	}
