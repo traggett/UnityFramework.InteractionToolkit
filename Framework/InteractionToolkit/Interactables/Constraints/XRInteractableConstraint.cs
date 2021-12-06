@@ -29,6 +29,8 @@ namespace Framework
 			protected virtual void OnDrawGizmos()
 			{
 				Gizmos.color = new Color(0.75f, 0.75f, 0.75f);
+				Gizmos.matrix = this.transform.parent != null ? this.transform.parent.localToWorldMatrix : Matrix4x4.identity;
+
 				DebugDraw(false);
 			}
 
