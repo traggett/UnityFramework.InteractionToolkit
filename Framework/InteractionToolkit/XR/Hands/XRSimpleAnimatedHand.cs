@@ -262,26 +262,30 @@ namespace Framework
 							}
 						}
 					}
+					//No override pose, lerp back to neutral
 					else
 					{
-						//Update pose lerp
+						//Fade out override pose
 						if (_overridePoseLerp > 0f)
 						{
 							_overridePoseLerp -= Time.deltaTime / _transitionFromOverridePoseTime;
 
+							//If now zero then clear any animation override clips and put visuals back in neutral position
 							if (_overridePoseLerp <= 0f)
 							{
 								OverrideClip(_overridePoseClipA, null);
 								OverrideClip(_overridePoseClipB, null);
 								_animatorOverrideController.ApplyOverrides(_animatorClipOverrides);
-							}
-						}
 
-						//Lerp positon and rotation back to neutral
-						if (_overridePoseLerp > 0f)
-						{
-							_visualsRoot.transform.localPosition = Vector3.Lerp(Vector3.zero, _visualsRoot.transform.localPosition, _overridePoseLerp);
-							_visualsRoot.transform.localRotation = Quaternion.Slerp(Quaternion.identity, _visualsRoot.transform.localRotation, _overridePoseLerp);
+								_visualsRoot.transform.localRotation = Quaternion.identity;
+								_visualsRoot.transform.localPosition = Vector3.zero;
+							}
+							//Otherwise lerp positon and rotation back to neutral
+							else
+							{
+								_visualsRoot.transform.localRotation = Quaternion.Slerp(Quaternion.identity, _visualsRoot.transform.localRotation, _overridePoseLerp);
+								_visualsRoot.transform.localPosition = Vector3.Lerp(Vector3.zero, _visualsRoot.transform.localPosition, _overridePoseLerp);
+							}
 						}
 					}
 
