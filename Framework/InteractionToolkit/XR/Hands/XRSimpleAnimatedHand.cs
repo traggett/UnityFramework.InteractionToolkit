@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR;
@@ -12,25 +13,22 @@ namespace Framework
 			{
 				#region Public Data
 				/// <summary>
-				/// Animation state name for override pose animation.
-				/// </summary>
-				public const string ANIM_NAME_OVERRIDE_POSE = "Pose";
-				/// <summary>
 				/// Animation param name for a float used for clenching the fist.
 				/// </summary>
 				public const string ANIM_PARAM_NAME_FIST = "Fist";
 				/// <summary>
-				/// Animation param name for a float used for clenching the fist.
+				/// Animation param name for a float used for point index finger.
 				/// </summary>
 				public const string ANIM_PARAM_NAME_POINT = "Point";
 				/// <summary>
-				/// Animation param name for a int used for applying an override pose.
+				/// Animation param name for a index to the current override pose animation (should either be 0 or 1)
 				/// </summary>
 				public const string ANIM_PARAM_NAME_POSE = "Pose";
+				/// <summary>
+				/// The layer name used to blend the override pose.
+				/// </summary>
+				public const string ANIM_LAYER_NAME_POSE = "Override Pose"; 
 
-				public const string ANIM_LAYER_NAME_POSE = "Pose"; 
-
-				public const float INPUT_RATE_CHANGE = 20.0f;
 
 				/// <summary>
 				/// The node this hand represents (should either be XRNode.LeftHand or XRNode.RightHand)
@@ -69,13 +67,24 @@ namespace Framework
 				public InputActionProperty _indexFingerTouchAction;
 				
 				/// <summary>
-				/// The time taken to lerp to an override pose.
+				/// The time taken to blend in an override pose.
 				/// </summary>
 				public float _transitionToOverridePoseTime = 0.2f;
 				/// <summary>
-				/// The time taken to lerp from an override pose back to normal.
+				/// The time taken to blend from an override pose back to normal.
 				/// </summary>
 				public float _transitionFromOverridePoseTime = 0.3f;
+
+				/// <summary>
+				/// Animation state names for override pose animations (Need two so can transition from one to another).
+				/// </summary>
+				public AnimationClip _overridePoseClipA;
+				public AnimationClip _overridePoseClipB;
+
+				/// <summary>
+				/// The time taken to blend a binary hand state value (eg index finger touching) from zero to one
+				/// </summary>
+				public float _buttonToAxisTime = 0.25f;
 				#endregion
 
 				#region Private Data
@@ -85,6 +94,7 @@ namespace Framework
 				private int _animParamIndexPose = -1;
 
 				private AnimatorOverrideController _animatorOverrideController;
+				private List<KeyValuePair<AnimationClip, AnimationClip>> _animatorClipOverrides;
 
 				private XRHandPose _overridePose;
 				private float _overridePoseLerp;
@@ -109,6 +119,10 @@ namespace Framework
 					_animParamIndexPose = Animator.StringToHash(ANIM_PARAM_NAME_POSE);
 
 					_animatorOverrideController = new AnimatorOverrideController(_animator.runtimeAnimatorController);
+					_animator.runtimeAnimatorController = _animatorOverrideController;
+
+					_animatorClipOverrides = new List<KeyValuePair<AnimationClip, AnimationClip>>(_animatorOverrideController.overridesCount);
+					_animatorOverrideController.GetOverrides(_animatorClipOverrides);
 				}
 
 				private void Update()
@@ -162,7 +176,7 @@ namespace Framework
 				#region Private Functions
 				private float InputValueRateChange(bool isDown, float value)
 				{
-					float rateDelta = Time.deltaTime * INPUT_RATE_CHANGE;
+					float rateDelta = Time.deltaTime / _buttonToAxisTime;
 					float sign = isDown ? 1.0f : -1.0f;
 					return Mathf.Clamp01(value + rateDelta * sign);
 				}
@@ -191,6 +205,7 @@ namespace Framework
 					//Transiton to / from override pose
 					if (_overridePose != null)
 					{
+						//Set the override pose animation (if any)
 						SetOverridePoseAnimation(_overridePose._animation);
 
 						//Update pose lerp
@@ -295,21 +310,84 @@ namespace Framework
 					return 0f;
 				}
 
+				private AnimationClip GetOverrideClip(AnimationClip animationClip)
+				{
+					return _animatorClipOverrides.Find(x => x.Key == animationClip).Value;
+				}
+
+				private void SetOverrideClip(AnimationClip animationClip, AnimationClip overrideClip)
+				{
+					int index = _animatorClipOverrides.FindIndex(x => x.Key == animationClip);
+
+					if (index != -1)
+					{
+						_animatorClipOverrides[index] = new KeyValuePair<AnimationClip, AnimationClip>(animationClip, overrideClip);
+					}
+				}
+
 				private void SetOverridePoseAnimation(AnimationClip animationClip)
 				{
-					/* TO DO set next overide pose animation from clip, lerp layer weight up
-
-
-					//Apply animation - TO DO potentiall have a buffer of two poses that can animate between if they change
-					if (_overridePose._animation != null)
+					if (animationClip != null)
 					{
-						_animatorOverrideController[ANIM_NAME_OVERRIDE_POSE] = _overridePose._animation;
-						_animator.SetBool(_animParamIndexPose, true);
+						float layerWeight = _animator.GetLayerWeight(_animLayerIndexPose);
+
+						//If not currently playing an override pose...
+						if (layerWeight <= 0f)
+						{
+							//Set to pose A and set the animation clip
+							_animator.SetInteger(_animParamIndexPose, 0);
+
+							if (GetOverrideClip(_overridePoseClipA) != animationClip)
+							{
+								SetOverrideClip(_overridePoseClipA, animationClip);
+								_animatorOverrideController.ApplyOverrides(_animatorClipOverrides);
+							}
+						}
+						else
+						{
+							//Otherwise already showing an override pose, check already showing required animation...
+							int poseIndex = _animator.GetInteger(_animParamIndexPose);
+
+							if (poseIndex == 0 && GetOverrideClip(_overridePoseClipA) != animationClip)
+							{
+								//...If not set the new animation to be the next pose and trigger transition
+								_animator.SetInteger(_animParamIndexPose, 1);
+								SetOverrideClip(_overridePoseClipB, animationClip);
+								_animatorOverrideController.ApplyOverrides(_animatorClipOverrides);
+							}
+							else if (poseIndex == 1 && GetOverrideClip(_overridePoseClipB) != animationClip)
+							{
+								//...If not set the new animation to be the next pose and trigger transition
+								_animator.SetInteger(_animParamIndexPose, 0);
+								SetOverrideClip(_overridePoseClipA, animationClip);
+								_animatorOverrideController.ApplyOverrides(_animatorClipOverrides);
+							}
+						}
+
+						layerWeight += Time.deltaTime / _transitionToOverridePoseTime;
+
+						_animator.SetLayerWeight(_animLayerIndexPose, layerWeight);
 					}
 					else
 					{
-						_animator.SetBool(_animParamIndexPose, false);
-					}*/
+						float layerWeight = _animator.GetLayerWeight(_animLayerIndexPose);
+
+						if (layerWeight > 0f)
+						{
+							layerWeight -= Time.deltaTime / _transitionFromOverridePoseTime;
+
+							if (layerWeight <= 0f)
+							{
+								SetOverrideClip(_overridePoseClipA,  null);
+								SetOverrideClip(_overridePoseClipB,  null);
+								_animatorOverrideController.ApplyOverrides(_animatorClipOverrides);
+
+								layerWeight = 0f;
+							}
+
+							_animator.SetLayerWeight(_animLayerIndexPose, layerWeight);
+						}
+					}
 				}
 				#endregion
 			}

@@ -8,11 +8,11 @@ namespace Framework
 		namespace XR
 		{
 			/// <summary>
-			/// Interactor used for directly interacting with interactables that are touching.
-			/// This is used by the hands to pick things up or interact with things directly.
+			/// Interactor used for directly interacting with interactables that are colliding with it.
+			/// This is used by the hands to pick things up or interact with things directly (eg press a button)
 			/// It can be forced into poses whilst hovering or selecting interactables (eg correct grab pose whilst grabbing a lever).
 			/// </summary>
-			public class XRHandInteractor : XRDirectInteractor, IXRGrabInteractor
+			public class XRHandGrabInteractor : XRDirectInteractor, IXRGrabInteractor
 			{
 				#region Public Data
 				/// <summary>

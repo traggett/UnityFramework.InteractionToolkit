@@ -18,7 +18,7 @@ namespace Framework
 				/// </summary>
 				public void SetHandPose(BaseInteractionEventArgs args)
 				{
-					XRHandInteractor handInteractor = args.interactor as XRHandInteractor;
+					XRHandGrabInteractor handInteractor = args.interactor as XRHandGrabInteractor;
 
 					if (handInteractor != null)
 					{
@@ -34,7 +34,7 @@ namespace Framework
 				/// </summary>
 				public void ClearHandPose(BaseInteractionEventArgs args)
 				{
-					XRHandInteractor handInteractor = args.interactor as XRHandInteractor;
+					XRHandGrabInteractor handInteractor = args.interactor as XRHandGrabInteractor;
 
 					if (handInteractor != null)
 					{
@@ -47,7 +47,7 @@ namespace Framework
 				#endregion
 
 				#region Virtual Interface
-				public abstract XRHandPose GetPose(XRHandInteractor interactor);
+				public abstract XRHandPose GetPose(XRHandGrabInteractor interactor);
 				#endregion
 			}
 		}

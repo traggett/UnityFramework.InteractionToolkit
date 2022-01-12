@@ -40,7 +40,7 @@ namespace Framework
 				#endregion
 
 				#region XRHandPoser
-				public override XRHandPose GetPose(XRHandInteractor interactor)
+				public override XRHandPose GetPose(XRHandGrabInteractor interactor)
 				{
 					Transform attachTransform = interactor.attachTransform;
 
