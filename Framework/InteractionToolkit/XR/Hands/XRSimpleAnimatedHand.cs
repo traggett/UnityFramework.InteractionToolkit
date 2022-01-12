@@ -206,7 +206,7 @@ namespace Framework
 					if (_overridePose != null)
 					{
 						//Set the override pose animation (if any)
-						SetOverridePoseAnimation(_overridePose._animation);
+						SetCurrentOverridePoseAnimation(_overridePose._animation);
 
 						//Update pose lerp
 						if (_overridePoseLerp < 1f)
@@ -264,13 +264,17 @@ namespace Framework
 					}
 					else
 					{
-						//Cancel override pose animation
-						SetOverridePoseAnimation(null);
-
 						//Update pose lerp
 						if (_overridePoseLerp > 0f)
 						{
 							_overridePoseLerp -= Time.deltaTime / _transitionFromOverridePoseTime;
+
+							if (_overridePoseLerp <= 0f)
+							{
+								OverrideClip(_overridePoseClipA, null);
+								OverrideClip(_overridePoseClipB, null);
+								_animatorOverrideController.ApplyOverrides(_animatorClipOverrides);
+							}
 						}
 
 						//Lerp positon and rotation back to neutral
@@ -280,6 +284,8 @@ namespace Framework
 							_visualsRoot.transform.localRotation = Quaternion.Slerp(Quaternion.identity, _visualsRoot.transform.localRotation, _overridePoseLerp);
 						}
 					}
+
+					_animator.SetLayerWeight(_animLayerIndexPose, _overridePoseLerp);
 				}
 
 				private bool IsPressed(InputAction action)
@@ -315,7 +321,7 @@ namespace Framework
 					return _animatorClipOverrides.Find(x => x.Key == animationClip).Value;
 				}
 
-				private void SetOverrideClip(AnimationClip animationClip, AnimationClip overrideClip)
+				private void OverrideClip(AnimationClip animationClip, AnimationClip overrideClip)
 				{
 					int index = _animatorClipOverrides.FindIndex(x => x.Key == animationClip);
 
@@ -325,7 +331,7 @@ namespace Framework
 					}
 				}
 
-				private void SetOverridePoseAnimation(AnimationClip animationClip)
+				private void SetCurrentOverridePoseAnimation(AnimationClip animationClip)
 				{
 					if (animationClip != null)
 					{
@@ -339,7 +345,7 @@ namespace Framework
 
 							if (GetOverrideClip(_overridePoseClipA) != animationClip)
 							{
-								SetOverrideClip(_overridePoseClipA, animationClip);
+								OverrideClip(_overridePoseClipA, animationClip);
 								_animatorOverrideController.ApplyOverrides(_animatorClipOverrides);
 							}
 						}
@@ -352,40 +358,16 @@ namespace Framework
 							{
 								//...If not set the new animation to be the next pose and trigger transition
 								_animator.SetInteger(_animParamIndexPose, 1);
-								SetOverrideClip(_overridePoseClipB, animationClip);
+								OverrideClip(_overridePoseClipB, animationClip);
 								_animatorOverrideController.ApplyOverrides(_animatorClipOverrides);
 							}
 							else if (poseIndex == 1 && GetOverrideClip(_overridePoseClipB) != animationClip)
 							{
 								//...If not set the new animation to be the next pose and trigger transition
 								_animator.SetInteger(_animParamIndexPose, 0);
-								SetOverrideClip(_overridePoseClipA, animationClip);
+								OverrideClip(_overridePoseClipA, animationClip);
 								_animatorOverrideController.ApplyOverrides(_animatorClipOverrides);
 							}
-						}
-
-						layerWeight += Time.deltaTime / _transitionToOverridePoseTime;
-
-						_animator.SetLayerWeight(_animLayerIndexPose, layerWeight);
-					}
-					else
-					{
-						float layerWeight = _animator.GetLayerWeight(_animLayerIndexPose);
-
-						if (layerWeight > 0f)
-						{
-							layerWeight -= Time.deltaTime / _transitionFromOverridePoseTime;
-
-							if (layerWeight <= 0f)
-							{
-								SetOverrideClip(_overridePoseClipA,  null);
-								SetOverrideClip(_overridePoseClipB,  null);
-								_animatorOverrideController.ApplyOverrides(_animatorClipOverrides);
-
-								layerWeight = 0f;
-							}
-
-							_animator.SetLayerWeight(_animLayerIndexPose, layerWeight);
 						}
 					}
 				}
