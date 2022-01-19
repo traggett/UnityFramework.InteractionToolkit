@@ -103,7 +103,6 @@ namespace Framework
 				private float _thumbsUpBlend;
 				#endregion
 
-
 				#region Unity Messages
 				private void Awake()
 				{
@@ -186,12 +185,12 @@ namespace Framework
 					// Clench fist amount
 					if (_animParamIndexFist != -1)
 					{
-						float grabAmount = GetFloat(_grabAmountAction.action);
+						float grabAmount = InputHelpers.GetFloat(_grabAmountAction.action);
 						_animator.SetFloat(_animParamIndexFist, grabAmount);
 					}
 
 					// Index finger point amount
-					bool isPointing = !IsPressed(_indexFingerTouchAction.action);
+					bool isPointing = !InputHelpers.IsPressed(_indexFingerTouchAction.action);
 					_pointBlend = InputValueRateChange(isPointing, _pointBlend);
 
 					if (_animParamIndexPoint != -1)
@@ -290,34 +289,6 @@ namespace Framework
 					}
 
 					_animator.SetLayerWeight(_animLayerIndexPose, _overridePoseLerp);
-				}
-
-				private bool IsPressed(InputAction action)
-				{
-					if (action == null)
-						return false;
-
-#if INPUT_SYSTEM_1_1_OR_NEWER || INPUT_SYSTEM_1_1_PREVIEW // 1.1.0-preview.2 or newer, including pre-release
-						return action.phase == InputActionPhase.Performed;
-#else
-					if (action.activeControl is ButtonControl buttonControl)
-						return buttonControl.isPressed;
-
-					if (action.activeControl is AxisControl)
-						return action.ReadValue<float>() >= m_ButtonPressPoint;
-
-					return action.triggered || action.phase == InputActionPhase.Performed;
-#endif
-				}
-
-				private static float GetFloat(InputAction action)
-				{
-					if (action != null)
-					{
-						return action.ReadValue<float>();
-					}
-
-					return 0f;
 				}
 
 				private AnimationClip GetOverrideClip(AnimationClip animationClip)

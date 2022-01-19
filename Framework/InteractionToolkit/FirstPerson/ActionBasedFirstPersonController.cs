@@ -164,7 +164,7 @@ namespace Framework
 				if (TryRead2DAxis(_moveAction.action, out Vector2 movementInput))
 				{
 					// set target speed based on move speed, sprint speed and if sprint is pressed
-					float targetSpeed = IsPressed(_sprintAction.action) ? SprintSpeed : MoveSpeed;
+					float targetSpeed = InputHelpers.IsPressed(_sprintAction.action) ? SprintSpeed : MoveSpeed;
 
 					// a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
 
@@ -223,7 +223,7 @@ namespace Framework
 					}
 
 					// Jump
-					if (IsPressed(_jumpAction.action) && _jumpTimeoutDelta <= 0.0f)
+					if (InputHelpers.IsPressed(_jumpAction.action) && _jumpTimeoutDelta <= 0.0f)
 					{
 						// the square root of H * -2 * G = how much velocity needed to reach desired height
 						_verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
@@ -296,24 +296,6 @@ namespace Framework
 				}
 				output = default;
 				return false;
-			}
-
-			protected static bool IsPressed(InputAction action)
-			{
-				if (action == null)
-					return false;
-
-#if INPUT_SYSTEM_1_1_OR_NEWER || INPUT_SYSTEM_1_1_PREVIEW // 1.1.0-preview.2 or newer, including pre-release
-                return action.phase == InputActionPhase.Performed;
-#else
-				if (action.activeControl is ButtonControl buttonControl)
-					return buttonControl.isPressed;
-
-				if (action.activeControl is AxisControl)
-					return action.ReadValue<float>() >= m_ButtonPressPoint;
-
-				return action.triggered || action.phase == InputActionPhase.Performed;
-#endif
 			}
 		}
 	}
