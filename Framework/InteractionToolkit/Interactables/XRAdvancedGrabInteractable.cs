@@ -1,11 +1,29 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace Framework
 {
 	namespace Interaction.Toolkit
 	{
+		/// <summary>
+		/// <see cref="UnityEvent"/> that is invoked when an Interactor throws this interactible on detach.
+		/// </summary>
+		[Serializable]
+		public sealed class ThrownEvent : UnityEvent<ThrownEventArgs>
+		{
+		}
+
+		/// <summary>
+		/// Event data associated with the event when an Interactor throws this interactible on detach.
+		/// </summary>
+		public class ThrownEventArgs : BaseInteractionEventArgs
+		{
+			public Vector3 velocity;
+			public Vector3 angularVelocity;
+		}
+
 		/// <summary>
 		/// Component based on XRGrabInteractable which allows for constrained movement.
 		/// Good for things like doors, levers etc
@@ -336,6 +354,22 @@ namespace Framework
 				set => m_ForceGravityOnDetach = value;
 			}
 
+			/// <summary>
+			/// Gets or sets the event that is called when the interactible is thrown on detach.
+			/// </summary>
+			/// <remarks>
+			/// The <see cref="ThrownEventArgs"/> passed to each listener is only valid while the event is invoked,
+			/// do not hold a reference to it.
+			/// </remarks>
+			public ThrownEvent thownEvent
+			{
+				get => m_thownEvent;
+				set => m_thownEvent = value;
+			}
+
+			[SerializeField]
+			ThrownEvent m_thownEvent = new ThrownEvent();
+
 			public XRInteractableConstraint Constraint
 			{
 				get => m_Constraint;
@@ -377,6 +411,11 @@ namespace Framework
 			private bool m_UsedGravity;
 			private float m_OldDrag;
 			private float m_OldAngularDrag;
+
+			public Vector3 GetDetachVelocity()
+			{
+				return m_DetachVelocity;
+			}
 
 			#region Unity Messages
 			protected override void Awake()
@@ -449,6 +488,16 @@ namespace Framework
 					m_Rigidbody.velocity = m_DetachVelocity;
 					m_Rigidbody.angularVelocity = Vector3.zero;
 					m_Rigidbody.AddTorque(m_DetachAngularVelocity, ForceMode.VelocityChange);
+
+					ThrownEventArgs thrownEventArgs = new ThrownEventArgs()
+					{
+						interactable = this,
+						interactor = selectingInteractor,
+						velocity = m_DetachVelocity,
+						angularVelocity = m_DetachAngularVelocity
+					};
+
+					thownEvent?.Invoke(thrownEventArgs);
 				}
 			}
 
