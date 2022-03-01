@@ -86,7 +86,7 @@ namespace Framework
 				public bool CanGrab()
 				{
 					//Only count as grabbing when not moving from or to and override pose (otherwise will pick up object whilst lerp back fom another interaction)
-					return !_handVisuals.IsEnteringOverridePose() && !_handVisuals.IsEnteringOverridePose();
+					return !_handVisuals.IsEnteringOverridePose() && !_handVisuals.IsReturningFromOverridePose();
 				}
 
 				public bool IsGrabbing()
