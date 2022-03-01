@@ -47,12 +47,12 @@ namespace Framework
 				public Animator _animator;
 
 				/// <summary>
-				/// Input Action used to drive grip animations.
+				///  Optional Input Action Input Action used to drive fingers clapsed animations.
 				/// </summary>
 				public InputActionProperty _gripAmountAction;
 
 				/// <summary>
-				/// Optional Input Action used to drive fingers clapsed or not
+				/// Optional Input Action used to drive fingers clapsed animations.
 				/// </summary>
 				public InputActionProperty _gripTouchAction;
 
@@ -64,7 +64,7 @@ namespace Framework
 				/// <summary>
 				/// Optional Input Action used to drive index finger up/down animations.
 				/// </summary>
-				public InputActionProperty _indexFingerTouchAction;
+				public InputActionProperty _indexFingerAmountAction;
 				
 				/// <summary>
 				/// The time taken to blend in an override pose.
@@ -80,11 +80,6 @@ namespace Framework
 				/// </summary>
 				public AnimationClip _overridePoseClipA;
 				public AnimationClip _overridePoseClipB;
-
-				/// <summary>
-				/// The time taken to blend a binary hand state value (eg index finger touching) from zero to one
-				/// </summary>
-				public float _buttonToAxisTime = 0.25f;
 				#endregion
 
 				#region Private Data
@@ -173,13 +168,6 @@ namespace Framework
 				#endregion
 
 				#region Private Functions
-				private float InputValueRateChange(bool isDown, float value)
-				{
-					float rateDelta = Time.deltaTime / _buttonToAxisTime;
-					float sign = isDown ? 1.0f : -1.0f;
-					return Mathf.Clamp01(value + rateDelta * sign);
-				}
-
 				private void UpdateInputAnimations()
 				{
 					// Clench fist amount
@@ -190,12 +178,10 @@ namespace Framework
 					}
 
 					// Index finger point amount
-					bool isPointing = !InputHelpers.IsPressed(_indexFingerTouchAction.action);
-					_pointBlend = InputValueRateChange(isPointing, _pointBlend);
-
 					if (_animParamIndexPoint != -1)
 					{
-						_animator.SetFloat(_animParamIndexPoint, _pointBlend);
+						float pointAmount = InputHelpers.GetFloat(_indexFingerAmountAction.action);
+						_animator.SetFloat(_animParamIndexPoint, pointAmount);
 					}
 				}
 
