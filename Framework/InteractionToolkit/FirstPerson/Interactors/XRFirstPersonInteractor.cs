@@ -78,9 +78,19 @@ namespace Framework
 
 
 			#region IXRGrabInteractor
-			public bool IsGrabbing()
+			public bool CanGrab()
 			{
 				return true;
+			}
+
+			public bool IsGrabbing()
+			{
+				return selectTarget != null && CanGrab();
+			}
+
+			public bool IsHoveringOverGrabbable()
+			{
+				return hoverTargets.Count > 0 && CanGrab();
 			}
 			#endregion
 

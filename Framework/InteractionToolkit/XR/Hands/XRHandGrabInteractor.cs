@@ -83,10 +83,20 @@ namespace Framework
 				#endregion
 
 				#region IXRGrabInteractor
+				public bool CanGrab()
+				{
+					//Only count as grabbing when not moving from or to and override pose (otherwise will pick up object whilst lerp back fom another interaction)
+					return !_handVisuals.IsEnteringOverridePose() && !_handVisuals.IsEnteringOverridePose();
+				}
+
 				public bool IsGrabbing()
 				{
-					//Only count as grabbing when not moving from or to and override pose
-					return !_handVisuals.IsEnteringOverridePose() && !_handVisuals.IsEnteringOverridePose();
+					return selectTarget != null && CanGrab();
+				}
+
+				public bool IsHoveringOverGrabbable()
+				{
+					return hoverTargets.Count > 0 && CanGrab();
 				}
 				#endregion
 

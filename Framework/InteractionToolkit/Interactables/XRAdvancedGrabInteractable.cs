@@ -627,7 +627,7 @@ namespace Framework
 				{
 					if (selectingInteractor is IXRGrabInteractor grabInteractor)
 					{
-						return grabInteractor.IsGrabbing();
+						return grabInteractor.CanGrab();
 					}
 
 					return true;
