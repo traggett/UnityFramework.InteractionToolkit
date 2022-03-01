@@ -47,14 +47,14 @@ namespace Framework
 				public Animator _animator;
 
 				/// <summary>
-				/// Input Action used to drive grab animations.
+				/// Input Action used to drive grip animations.
 				/// </summary>
-				public InputActionProperty _grabAmountAction;
+				public InputActionProperty _gripAmountAction;
 
 				/// <summary>
 				/// Optional Input Action used to drive fingers clapsed or not
 				/// </summary>
-				public InputActionProperty _grabTouchAction;
+				public InputActionProperty _gripTouchAction;
 
 				/// <summary>
 				/// Optional Input Action used to drive thumb up/down animations.
@@ -185,7 +185,7 @@ namespace Framework
 					// Clench fist amount
 					if (_animParamIndexFist != -1)
 					{
-						float grabAmount = InputHelpers.GetFloat(_grabAmountAction.action);
+						float grabAmount = InputHelpers.GetFloat(_gripAmountAction.action);
 						_animator.SetFloat(_animParamIndexFist, grabAmount);
 					}
 
