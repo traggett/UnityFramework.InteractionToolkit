@@ -12,20 +12,26 @@ namespace Framework
 		[RequireComponent(typeof(XRAdvancedGrabInteractable))]
 		public abstract class XRInteractableConstraint : MonoBehaviour
 		{
-			#region Public Interface
+			#region Public Data
 			public XRAdvancedGrabInteractable Interactable
 			{
-				get;
-				private set;
+				get
+				{
+					if (_interactable == null)
+					{
+						_interactable = GetComponent<XRAdvancedGrabInteractable>();
+					}
+
+					return _interactable;
+				}
 			}
 			#endregion
 
-			#region Unity Messages
-			protected virtual void Awake()
-			{
-				Interactable = GetComponent<XRAdvancedGrabInteractable>();
-			}
+			#region Private Data
+			private XRAdvancedGrabInteractable _interactable;
+			#endregion
 
+			#region Unity Messages
 			protected virtual void OnDrawGizmos()
 			{
 				Gizmos.color = new Color(0.75f, 0.75f, 0.75f);
