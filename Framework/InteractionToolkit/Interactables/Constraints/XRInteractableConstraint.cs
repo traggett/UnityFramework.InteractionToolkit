@@ -29,7 +29,7 @@ namespace Framework
 			protected virtual void OnDrawGizmos()
 			{
 				Gizmos.color = new Color(0.75f, 0.75f, 0.75f);
-				Gizmos.matrix = this.transform.parent != null ? this.transform.parent.localToWorldMatrix : Matrix4x4.identity;
+				Gizmos.matrix = GetGizmoDrawMatrix();
 
 				DebugDraw(false);
 			}
@@ -37,9 +37,16 @@ namespace Framework
 			protected virtual void OnDrawGizmosSelected()
 			{
 				Gizmos.color = Color.green;
-				Gizmos.matrix = this.transform.parent != null ? this.transform.parent.localToWorldMatrix : Matrix4x4.identity;
-
+				Gizmos.matrix = GetGizmoDrawMatrix();
+				
 				DebugDraw(true);
+			}
+
+			private Matrix4x4 GetGizmoDrawMatrix()
+			{
+				Matrix4x4 matrix = this.transform.localToWorldMatrix;
+				matrix = new Matrix4x4(matrix.GetColumn(0).normalized, matrix.GetColumn(1).normalized, matrix.GetColumn(2).normalized, matrix.GetColumn(3).normalized);
+				return matrix;
 			}
 			#endregion
 
