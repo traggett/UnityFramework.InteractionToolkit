@@ -14,7 +14,7 @@ namespace Framework
 			{
 				#region Public Interface
 				/// <summary>
-				/// Hook this function up to the OnGrab or OnHoverEnter or Activate events on an XRBaseInteractable
+				/// Hook this function up to the OnGrab, SelectEnter or HoverEnter events on an XRBaseInteractable
 				/// </summary>
 				public void SetHandPose(BaseInteractionEventArgs args)
 				{
@@ -30,7 +30,7 @@ namespace Framework
 				}
 
 				/// <summary>
-				/// Hook this function up to the OnDrop or OnHoverExit or Deactivate event on an XRBaseInteractable
+				/// Hook this function up to the OnDrop, SelectExit or HoverExit event on an XRBaseInteractable
 				/// </summary>
 				public void ClearHandPose(BaseInteractionEventArgs args)
 				{
