@@ -457,13 +457,6 @@ namespace Framework
 				UpdateInteractorLocalPose(selectingInteractor);
 
 				SmoothVelocityStart();
-
-				GrabEventArgs grabEventArgs = new GrabEventArgs()
-				{
-					interactable = this,
-					interactor = selectingInteractor,
-				};
-				onGrab?.Invoke(grabEventArgs);
 			}
 
 			/// <summary>
@@ -478,6 +471,7 @@ namespace Framework
 
 				m_CurrentMovementType = m_MovementType;
 				m_DetachInLateUpdate = true;
+
 				SmoothVelocityEnd();
 			}
 
@@ -491,22 +485,12 @@ namespace Framework
 			/// <seealso cref="Drop"/>
 			protected virtual void Detach()
 			{
-				DropEventArgs dropEventArgs = new DropEventArgs()
-				{
-					interactable = this,
-					interactor = selectingInteractor,
-					velocity = m_DetachVelocity,
-					angularVelocity = m_DetachAngularVelocity
-				};
-
 				if (m_ThrowOnDetach)
 				{
 					m_Rigidbody.velocity = m_DetachVelocity;
 					m_Rigidbody.angularVelocity = Vector3.zero;
 					m_Rigidbody.AddTorque(m_DetachAngularVelocity, ForceMode.VelocityChange);
 				}
-
-				onDrop?.Invoke(dropEventArgs);
 			}
 
 			/// <summary>
@@ -637,14 +621,34 @@ namespace Framework
 			protected override void OnSelectEntering(SelectEnterEventArgs args)
 			{
 				base.OnSelectEntering(args);
+
 				Grab();
+
+				//Trigger grab event (after finished selected event and grabbed item)
+				GrabEventArgs grabEventArgs = new GrabEventArgs()
+				{
+					interactable = this,
+					interactor = selectingInteractor,
+				};
+				onGrab?.Invoke(grabEventArgs);
 			}
 
 			/// <inheritdoc />
 			protected override void OnSelectExiting(SelectExitEventArgs args)
 			{
 				base.OnSelectExiting(args);
+
 				Drop();
+
+				//Trigger drop event (after finished selected exit event and dropped item)
+				DropEventArgs dropEventArgs = new DropEventArgs()
+				{
+					interactable = this,
+					interactor = args.interactor,
+					velocity = m_DetachVelocity,
+					angularVelocity = m_DetachAngularVelocity,
+				};
+				onDrop?.Invoke(dropEventArgs);
 			}
 			#endregion
 
@@ -822,6 +826,11 @@ namespace Framework
 					var smoothedAngularVelocity = GetSmoothedVelocityValue(m_ThrowSmoothingAngularVelocityFrames);
 					m_DetachVelocity = smoothedVelocity * m_ThrowVelocityScale;
 					m_DetachAngularVelocity = smoothedAngularVelocity * m_ThrowAngularVelocityScale;
+				}
+				else
+				{
+					m_DetachVelocity = Vector3.zero;
+					m_DetachAngularVelocity = Vector3.zero;
 				}
 			}
 
