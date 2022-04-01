@@ -14,7 +14,7 @@ namespace Framework
 			{
 				#region Public Interface
 				/// <summary>
-				/// Hook this function up to the OnSelectedEnter or OnHoverEnter or Activate events on an XRBaseInteractable
+				/// Hook this function up to the OnGrab or OnHoverEnter or Activate events on an XRBaseInteractable
 				/// </summary>
 				public void SetHandPose(BaseInteractionEventArgs args)
 				{
@@ -22,7 +22,7 @@ namespace Framework
 
 					if (handInteractor != null)
 					{
-						if (args is SelectEnterEventArgs)
+						if (args is GrabEventArgs | args is SelectEnterEventArgs)
 							handInteractor.ApplyHandPoserOnSelected(this);
 						else if (args is HoverEnterEventArgs)
 							handInteractor.ApplyHandPoserOnHovered(this);
@@ -30,7 +30,7 @@ namespace Framework
 				}
 
 				/// <summary>
-				/// Hook this function up to the OnSelectedExit or OnHoverExit or Deactivate event on an XRBaseInteractable
+				/// Hook this function up to the OnDrop or OnHoverExit or Deactivate event on an XRBaseInteractable
 				/// </summary>
 				public void ClearHandPose(BaseInteractionEventArgs args)
 				{
@@ -38,7 +38,7 @@ namespace Framework
 
 					if (handInteractor != null)
 					{
-						if (args is SelectExitEventArgs)
+						if (args is DropEventArgs || args is SelectExitEventArgs)
 							handInteractor.ClearHandPoserOnSelected(this);
 						else if (args is HoverExitEventArgs)
 							handInteractor.ClearHandPoserOnHovered(this);

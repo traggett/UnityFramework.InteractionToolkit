@@ -29,19 +29,19 @@ namespace Framework
 				/// When an interactable wants the hand to be in a pose beyond this disance, the selection will be cancelled.
 				/// </summary>
 				public float _maxSelectedOverridePoseDistance = 0.25f;
-				
+
 				/// <summary>
 				/// The max rotation difference the hand can visually be from the interactors actual rotation whilst selecting an interactable.
 				/// When an interactable wants the hand to be in a pose beyond this rotation, the selection will be cancelled.
 				/// </summary>
 				public float _maxSelectedOverridePoseRotation = 90f;
-				
+
 				/// <summary>
 				/// The max distance the hand can visually be from the interactors actual position whilst hovering over an interactable.
 				/// When an interactable wants the hand to be in a pose beyond this disance, the hover will be cancelled.
 				/// </summary>
 				public float _maxHoveredOverridePoseDistance = 0.15f;
-				
+
 				/// <summary>
 				/// The max rotation difference the hand can visually be from the interactors actual rotation whilst hovering over an interactable.
 				/// When an interactable wants the hand to be in a pose beyond this rotation, the hover will be cancelled.
@@ -151,23 +151,65 @@ namespace Framework
 					if (_handVisuals != null)
 					{
 						//If selected interactable with a hand poser...
-						if(_currentSelectedPoser != null)
+						if (_currentSelectedPoser != null)
 						{
 							XRHandPose handPose = _currentSelectedPoser.GetPose(this);
-							
-							if (IsPoseOk(handPose, _maxSelectedOverridePoseDistance, _maxSelectedOverridePoseRotation))
+
+							XRAdvancedGrabInteractable grabInteractable = selectTarget as XRAdvancedGrabInteractable;
+
+							//If selected object is a grab interactable that can be picked up then instead of
+							//moving hand to required pose position/rotation, move the object instead
+							if (grabInteractable != null && (grabInteractable.trackPosition || grabInteractable.trackRotation))
 							{
+								if (grabInteractable.trackRotation)
+								{
+									//Find the difference between pose rotation and actual hand rotation
+									Quaternion handRotation = this.attachTransform.rotation;
+									Quaternion interactorLocalRotation = Quaternion.Inverse(handRotation) * handPose._worldRotation;
+
+									//Set the interacables attach rotation offset so the hand pose will be correct
+									grabInteractable.SetInteractorLocalAttachRotationOffset(interactorLocalRotation);
+
+									//Now ignore the rotation from the hand pose
+									handPose._hasRotation = false;
+								}
+								else if (IsPoseRotationOk(handPose, _maxSelectedOverridePoseRotation))
+								{
+									ClearSelectedPose(handPose);
+									return;
+								}
+
+								if (grabInteractable.trackPosition)
+								{
+									//Find the difference between pose position and actual hand position
+									Vector3 handPosition = this.attachTransform.position;
+									Vector3 worldOffset = handPosition - handPose._worldPosition;
+									Vector3 interactorLocalPosition = Quaternion.Inverse(this.attachTransform.rotation) * worldOffset;
+									
+									//Set the interacables attach position offset so the hand pose will be correct
+									grabInteractable.SetInteractorLocalAttachPositionOffset(interactorLocalPosition);
+
+									//Now ignore the position from the hand pose
+									handPose._hasPosition = false;
+								}
+								else if (!IsPosePositionOk(handPose, _maxSelectedOverridePoseDistance))
+								{
+									ClearSelectedPose(handPose);
+									return;
+								}
+
 								_handVisuals.ApplyOverridePose(handPose);
 							}
 							else
 							{
-								_handVisuals.ClearOverridePose(handPose);
-
-								_currentSelectedPoser = null;
-
-								if (selectTarget != null)
+								if (IsPosePositionOk(handPose, _maxSelectedOverridePoseDistance) 
+									&& IsPoseRotationOk(handPose, _maxHoveredOverridePoseRotation))
 								{
-									interactionManager.SelectCancel(this, selectTarget);
+									_handVisuals.ApplyOverridePose(handPose);
+								}
+								else
+								{
+									ClearSelectedPose(handPose);
 								}
 							}
 						}
@@ -176,29 +218,23 @@ namespace Framework
 						{
 							XRHandPose handPose = _currentHoveredPoser.GetPose(this);
 
-							if (IsPoseOk(handPose, _maxHoveredOverridePoseDistance, _maxHoveredOverridePoseRotation))
+							if (IsPosePositionOk(handPose, _maxSelectedOverridePoseDistance) 
+								&& IsPoseRotationOk(handPose, _maxHoveredOverridePoseRotation))
 							{
 								_handVisuals.ApplyOverridePose(handPose);
 							}
 							else
 							{
-								_handVisuals.ClearOverridePose(handPose);
-
-								_currentHoveredPoser = null;
-
-								for (int i = 0; i < hoverTargets.Count; i++)
-								{
-									interactionManager.HoverCancel(this, hoverTargets[i]);
-								}
+								ClearHoveredPose(handPose);
 							}
 						}
 					}
 				}
 
 				/// <summary>
-				/// Checks whether a target hand pose goes beyond the allowed distance/rotation limits from the interactors actual current position/rotation.
+				/// Checks whether a target hand pose goes beyond the allowed distance limits from the interactors actual current position.
 				/// </summary>
-				private bool IsPoseOk(XRHandPose handPose, float maxDist, float maxAngle)
+				private bool IsPosePositionOk(XRHandPose handPose, float maxDist)
 				{
 					//Check distance
 					if (handPose._hasPosition)
@@ -211,6 +247,14 @@ namespace Framework
 						}
 					}
 
+					return true;
+				}
+
+				/// <summary>
+				/// Checks whether a target hand pose goes beyond the allowed rotation limits from the interactors actual current rotation.
+				/// </summary>
+				private bool IsPoseRotationOk(XRHandPose handPose, float maxAngle)
+				{
 					//Check rotation
 					if (handPose._hasRotation)
 					{
@@ -224,7 +268,31 @@ namespace Framework
 
 					return true;
 				}
-				#endregion
+
+				private void ClearSelectedPose(XRHandPose handPose)
+				{
+					_handVisuals.ClearOverridePose(handPose);
+
+					_currentSelectedPoser = null;
+
+					if (selectTarget != null)
+					{
+						interactionManager.SelectCancel(this, selectTarget);
+					}
+				}
+
+				private void ClearHoveredPose(XRHandPose handPose)
+				{
+					_handVisuals.ClearOverridePose(handPose);
+
+					_currentHoveredPoser = null;
+
+					for (int i = 0; i < hoverTargets.Count; i++)
+					{
+						interactionManager.HoverCancel(this, hoverTargets[i]);
+					}
+					#endregion
+				}
 			}
 		}
 	}

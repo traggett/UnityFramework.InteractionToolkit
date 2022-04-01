@@ -8,23 +8,6 @@ namespace Framework
 	namespace Interaction.Toolkit
 	{
 		/// <summary>
-		/// <see cref="UnityEvent"/> that is invoked when an Interactor throws this interactible on detach.
-		/// </summary>
-		[Serializable]
-		public sealed class ThrownEvent : UnityEvent<ThrownEventArgs>
-		{
-		}
-
-		/// <summary>
-		/// Event data associated with the event when an Interactor throws this interactible on detach.
-		/// </summary>
-		public class ThrownEventArgs : BaseInteractionEventArgs
-		{
-			public Vector3 velocity;
-			public Vector3 angularVelocity;
-		}
-
-		/// <summary>
 		/// Component based on XRGrabInteractable which allows for constrained movement.
 		/// Good for things like doors, levers etc
 		/// </summary>
@@ -355,20 +338,36 @@ namespace Framework
 			}
 
 			/// <summary>
-			/// Gets or sets the event that is called when the interactible is thrown on detach.
+			/// Gets or sets the event that is called when the interactible is grabbed.
 			/// </summary>
 			/// <remarks>
-			/// The <see cref="ThrownEventArgs"/> passed to each listener is only valid while the event is invoked,
+			/// The <see cref="GrabEventArgs"/> passed to each listener is only valid while the event is invoked,
 			/// do not hold a reference to it.
 			/// </remarks>
-			public ThrownEvent thownEvent
+			public GrabEvent onGrab
 			{
-				get => m_thownEvent;
-				set => m_thownEvent = value;
+				get => m_grabEvent;
+				set => m_grabEvent = value;
 			}
 
 			[SerializeField]
-			ThrownEvent m_thownEvent = new ThrownEvent();
+			GrabEvent m_grabEvent = new GrabEvent();
+
+			/// <summary>
+			/// Gets or sets the event that is called when the interactible is dropped.
+			/// </summary>
+			/// <remarks>
+			/// The <see cref="DropEventArgs"/> passed to each listener is only valid while the event is invoked,
+			/// do not hold a reference to it.
+			/// </remarks>
+			public DropEvent onDrop
+			{
+				get => m_dropEvent;
+				set => m_dropEvent = value;
+			}
+
+			[SerializeField]
+			DropEvent m_dropEvent = new DropEvent();
 
 			public XRInteractableConstraint Constraint
 			{
@@ -453,9 +452,18 @@ namespace Framework
 				m_TargetWorldRotation = transform.rotation;
 				m_CurrentAttachEaseTime = 0f;
 
+
+				//Work out where to attach the object to.
 				UpdateInteractorLocalPose(selectingInteractor);
 
 				SmoothVelocityStart();
+
+				GrabEventArgs grabEventArgs = new GrabEventArgs()
+				{
+					interactable = this,
+					interactor = selectingInteractor,
+				};
+				onGrab?.Invoke(grabEventArgs);
 			}
 
 			/// <summary>
@@ -483,22 +491,22 @@ namespace Framework
 			/// <seealso cref="Drop"/>
 			protected virtual void Detach()
 			{
+				DropEventArgs dropEventArgs = new DropEventArgs()
+				{
+					interactable = this,
+					interactor = selectingInteractor,
+					velocity = m_DetachVelocity,
+					angularVelocity = m_DetachAngularVelocity
+				};
+
 				if (m_ThrowOnDetach)
 				{
 					m_Rigidbody.velocity = m_DetachVelocity;
 					m_Rigidbody.angularVelocity = Vector3.zero;
 					m_Rigidbody.AddTorque(m_DetachAngularVelocity, ForceMode.VelocityChange);
-
-					ThrownEventArgs thrownEventArgs = new ThrownEventArgs()
-					{
-						interactable = this,
-						interactor = selectingInteractor,
-						velocity = m_DetachVelocity,
-						angularVelocity = m_DetachAngularVelocity
-					};
-
-					thownEvent?.Invoke(thrownEventArgs);
 				}
+
+				onDrop?.Invoke(dropEventArgs);
 			}
 
 			/// <summary>
@@ -535,6 +543,26 @@ namespace Framework
 				rigidbody.useGravity = m_UsedGravity | m_ForceGravityOnDetach;
 				rigidbody.drag = m_OldDrag;
 				rigidbody.angularDrag = m_OldAngularDrag;
+			}
+			#endregion
+
+			#region Public Interface
+			/// <summary>
+			/// Overrides the position offset this interactible will be from the interactor.
+			/// By default this will just be taken from the attach transform.
+			/// </summary>
+			public void SetInteractorLocalAttachPositionOffset(Vector3 localAttachOffset)
+			{
+				m_InteractorLocalPosition = localAttachOffset;
+			}
+
+			/// <summary>
+			/// Overrides the rotation offset this interactible will be from the interactor.
+			/// By default this will just be taken from the attach transform.
+			/// </summary>
+			public void SetInteractorLocalAttachRotationOffset(Quaternion localAttachOffset)
+			{
+				m_InteractorLocalRotation = localAttachOffset;
 			}
 			#endregion
 
@@ -772,8 +800,8 @@ namespace Framework
 				var attachOffset = transform.position - thisAttachTransform.position;
 				var localAttachOffset = thisAttachTransform.InverseTransformDirection(attachOffset);
 
-				m_InteractorLocalPosition = localAttachOffset;
-				m_InteractorLocalRotation = Quaternion.Inverse(Quaternion.Inverse(transform.rotation) * thisAttachTransform.rotation);
+				SetInteractorLocalAttachPositionOffset(localAttachOffset);
+				SetInteractorLocalAttachRotationOffset(Quaternion.Inverse(Quaternion.Inverse(transform.rotation) * thisAttachTransform.rotation));
 			}
 
 			private void SmoothVelocityStart()
