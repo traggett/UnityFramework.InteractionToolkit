@@ -42,8 +42,6 @@ namespace Framework
 				#region XRHandPoser
 				public override XRHandPose GetPose(XRHandGrabInteractor interactor)
 				{
-					Transform attachTransform = interactor.attachTransform;
-
 					_pose._hasPosition = _constrainPosition;
 
 					if (_constrainPosition)
@@ -62,9 +60,6 @@ namespace Framework
 								_pose._worldPosition = this.transform.position + (toCentre.normalized * _radius);
 							}
 						}
-
-						//Apply interactor attach transform to position
-						_pose._worldPosition -= (attachTransform.rotation * attachTransform.localPosition);
 					}
 
 					_pose._hasRotation = _constrainRotation;
@@ -73,9 +68,6 @@ namespace Framework
 					{
 						//Rotation faces towards centre?? Plus default rotation??
 						_pose._worldRotation = this.transform.rotation;
-
-						//Apply interactor attach transform to rotation
-						_pose._worldRotation *= attachTransform.localRotation;
 					}
 
 					if (interactor.HandVisuals.XRNode == UnityEngine.XR.XRNode.LeftHand)

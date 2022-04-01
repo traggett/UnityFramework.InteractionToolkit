@@ -163,12 +163,12 @@ namespace Framework
 							{
 								if (grabInteractable.trackRotation)
 								{
-									//Find the difference between pose rotation and actual hand rotation
-									Quaternion handRotation = this.attachTransform.rotation;
-									Quaternion interactorLocalRotation = Quaternion.Inverse(handRotation) * handPose._worldRotation;
-
+									//Find the world rotation offset from interactible to the pose
+									Quaternion interactibleRotation = grabInteractable.transform.rotation;
+									Quaternion interactorPoseOffset = Quaternion.Inverse(interactibleRotation) * handPose._worldRotation;
+									
 									//Set the interacables attach rotation offset so the hand pose will be correct
-									grabInteractable.SetInteractorLocalAttachRotationOffset(interactorLocalRotation);
+									grabInteractable.SetInteractorLocalAttachRotationOffset(interactorPoseOffset);
 
 									//Now ignore the rotation from the hand pose
 									handPose._hasRotation = false;
@@ -181,11 +181,13 @@ namespace Framework
 
 								if (grabInteractable.trackPosition)
 								{
-									//Find the difference between pose position and actual hand position
-									Vector3 handPosition = this.attachTransform.position;
-									Vector3 worldOffset = handPosition - handPose._worldPosition;
-									Vector3 interactorLocalPosition = Quaternion.Inverse(this.attachTransform.rotation) * worldOffset;
-									
+									//First find the world position offset from interactible to the pose
+									Vector3 interactiblePosition = grabInteractable.transform.position;
+									Vector3 worldOffset = interactiblePosition - handPose._worldPosition;
+
+									//Then convert it into our own attach transform space
+									Vector3 interactorLocalPosition = this.attachTransform.InverseTransformDirection(worldOffset);
+
 									//Set the interacables attach position offset so the hand pose will be correct
 									grabInteractable.SetInteractorLocalAttachPositionOffset(interactorLocalPosition);
 
@@ -291,8 +293,8 @@ namespace Framework
 					{
 						interactionManager.HoverCancel(this, hoverTargets[i]);
 					}
-					#endregion
 				}
+				#endregion
 			}
 		}
 	}
