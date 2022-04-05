@@ -27,13 +27,18 @@ namespace Framework
 				/// <summary>
 				/// The layer name used to blend the override pose.
 				/// </summary>
-				public const string ANIM_LAYER_NAME_POSE = "Override Pose"; 
-
+				public const string ANIM_LAYER_NAME_POSE = "Override Pose";
 
 				/// <summary>
 				/// The node this hand represents (should either be XRNode.LeftHand or XRNode.RightHand)
 				/// </summary>
 				public XRNode _handNode = XRNode.RightHand;
+
+				/// <summary>
+				/// The origin for poses
+				/// When a position or rotation is set on a pose it will position the hand relative to this.
+				/// </summary>
+				public Transform _poseOrigin;
 
 				/// <summary>
 				/// The root of the hands visuals.
@@ -202,13 +207,18 @@ namespace Framework
 						//Apply rotation
 						if (_overridePose._hasRotation)
 						{
+							Quaternion targetRotation = _overridePose._worldRotation;
+
+							//Add origin offset
+							targetRotation *= Quaternion.Inverse(this.transform.rotation) * _poseOrigin.rotation;
+
 							if (_overridePoseLerp < 1f)
 							{
-								_visualsRoot.transform.rotation = Quaternion.Slerp(_visualsRoot.transform.rotation, _overridePose._worldRotation, _overridePoseLerp);
+								_visualsRoot.transform.rotation = Quaternion.Slerp(_visualsRoot.transform.rotation, targetRotation, _overridePoseLerp);
 							}
 							else
 							{
-								_visualsRoot.transform.rotation = _overridePose._worldRotation;
+								_visualsRoot.transform.rotation = targetRotation;
 							}
 						}
 						else
@@ -226,13 +236,18 @@ namespace Framework
 						//Apply position
 						if (_overridePose._hasPosition)
 						{
+							Vector3 targetPosition = _overridePose._worldPosition;
+
+							//Add origin offset
+							targetPosition += this.transform.position - _poseOrigin.position;
+						
 							if (_overridePoseLerp < 1f)
 							{
-								_visualsRoot.transform.position = Vector3.Lerp(_visualsRoot.transform.position, _overridePose._worldPosition, _overridePoseLerp);
+								_visualsRoot.transform.position = Vector3.Lerp(_visualsRoot.transform.position, targetPosition, _overridePoseLerp);
 							}
 							else
 							{
-								_visualsRoot.transform.position = _overridePose._worldPosition;
+								_visualsRoot.transform.position = targetPosition;
 							}
 						}
 						else
