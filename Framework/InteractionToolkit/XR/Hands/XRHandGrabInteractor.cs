@@ -170,14 +170,14 @@ namespace Framework
 
 								if (pose._hasRotation)
 								{
-									//Find offset from interactible to pose rotation in interactible space
+									//Find offset from interactible to pose rotation in interactible local space
 									Quaternion interactableAttachOffset = Quaternion.Inverse(grabInteractable.transform.rotation) * pose._worldRotation;
 
-									//Convert into world space relative to this controller
+									//Convert into world space relative to this controller (assume the interactible is placed on this controller)
 									Quaternion worldSpaceOffset = this.transform.rotation * interactableAttachOffset;
 
-									//Then convert into interacitble attachment space
-									Quaternion interactorAttachOffset = Quaternion.Inverse(Quaternion.Inverse(this.transform.rotation) * this.attachTransform.rotation) * worldSpaceOffset;
+									//Then convert into interacitble attach transform local space
+									Quaternion interactorAttachOffset = Quaternion.Inverse(this.attachTransform.rotation) * worldSpaceOffset;
 
 									//Set attachment roation offset
 									grabInteractable.InteractorLocalAttachRotation = interactorAttachOffset;
@@ -185,18 +185,18 @@ namespace Framework
 
 								if (pose._hasPosition)
 								{
-									//Find offset from interactible to pose position in interactible space
+									//Find offset from interactible to pose position in interactible local space
 									Vector3 interactableAttachOffset = grabInteractable.transform.InverseTransformDirection(pose._worldPosition - grabInteractable.transform.position);
 
-									//Convert into world space relative to this controller
+									//Convert into world space relative to this controller (assume the interactible is placed on this controller)
 									Vector3 worldSpaceOffset = this.transform.TransformDirection(interactableAttachOffset);
 
-									//Then convert into interacitble attachment space
+									//Then convert into interacitble attach transform local space
 									Vector3 interactorSpaceOffset = this.attachTransform.InverseTransformDirection(worldSpaceOffset);
 									
 									//Set attachment position offset
 									grabInteractable.InteractorLocalAttachPosition = Quaternion.Inverse(grabInteractable.InteractorLocalAttachRotation) * interactorSpaceOffset;
-								}
+								} 
 							}
 						}
 					}
