@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
 
 namespace Framework
 {
@@ -33,7 +34,7 @@ namespace Framework
 				#endregion
 
 				#region XRHandPoser
-				public override XRHandPose GetPose(XRHandGrabInteractor interactor)
+				public override XRHandPose GetPose(XRHandGrabInteractor interactor, XRBaseInteractable interactable)
 				{
 					_pose._hasRotation = _constrainRotation;
 

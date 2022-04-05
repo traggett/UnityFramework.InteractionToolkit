@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace Framework
@@ -27,18 +26,6 @@ namespace Framework
 			protected const float k_DefaultThrowSmoothingDuration = 0.25f;
 			protected const float k_DefaultThrowVelocityScale = 1.5f;
 			protected const float k_DefaultThrowAngularVelocityScale = 1f;
-
-			[SerializeField]
-			protected Transform m_AttachTransform;
-
-			/// <summary>
-			/// The attachment point to use on this Interactable (will use this object's position if none set).
-			/// </summary>
-			public Transform attachTransform
-			{
-				get => m_AttachTransform;
-				set => m_AttachTransform = value;
-			}
 
 			[SerializeField]
 			private float m_AttachEaseInTime = k_DefaultAttachEaseInTime;
@@ -380,10 +367,22 @@ namespace Framework
 			}
 
 			// Point we are attaching to on this Interactable (in Interactor's attach coordinate space)
+			public Vector3 InteractorLocalAttachPosition
+			{
+				get => m_InteractorLocalPosition;
+				set => m_InteractorLocalPosition = value;
+			}
+
+			// Point we are moving towards each frame (eventually will be at Interactor's attach point)
+			public Quaternion InteractorLocalAttachRotation
+			{
+				get => m_InteractorLocalRotation;
+				set => m_InteractorLocalRotation = value;
+			}
+
 			private Vector3 m_InteractorLocalPosition;
 			private Quaternion m_InteractorLocalRotation;
 
-			// Point we are moving towards each frame (eventually will be at Interactor's attach point)
 			private Vector3 m_TargetWorldPosition;
 			private Quaternion m_TargetWorldRotation;
 
@@ -448,7 +447,7 @@ namespace Framework
 				m_DetachAngularVelocity = Vector3.zero;
 
 				// Initialize target pose for easing and smoothing
-				m_TargetWorldPosition = m_Rigidbody.worldCenterOfMass;
+				m_TargetWorldPosition = transform.position;
 				m_TargetWorldRotation = transform.rotation;
 				m_CurrentAttachEaseTime = 0f;
 
@@ -527,26 +526,6 @@ namespace Framework
 				rigidbody.useGravity = m_UsedGravity | m_ForceGravityOnDetach;
 				rigidbody.drag = m_OldDrag;
 				rigidbody.angularDrag = m_OldAngularDrag;
-			}
-			#endregion
-
-			#region Public Interface
-			/// <summary>
-			/// Overrides the position offset this interactible will be from the interactor.
-			/// By default this will just be taken from the attach transform.
-			/// </summary>
-			public void SetInteractorLocalAttachPositionOffset(Vector3 localAttachOffset)
-			{
-				m_InteractorLocalPosition = localAttachOffset;
-			}
-
-			/// <summary>
-			/// Overrides the rotation offset this interactible will be from the interactor.
-			/// By default this will just be taken from the attach transform.
-			/// </summary>
-			public void SetInteractorLocalAttachRotationOffset(Quaternion localAttachOffset)
-			{
-				m_InteractorLocalRotation = localAttachOffset;
 			}
 			#endregion
 
@@ -670,7 +649,7 @@ namespace Framework
 
 			private Vector3 GetWorldAttachPosition(XRBaseInteractor interactor)
 			{
-				return interactor.attachTransform.position + interactor.attachTransform.rotation * m_InteractorLocalPosition;
+				return interactor.attachTransform.position + GetWorldAttachRotation(interactor) * m_InteractorLocalPosition;
 			}
 
 			private Quaternion GetWorldAttachRotation(XRBaseInteractor interactor)
@@ -685,7 +664,7 @@ namespace Framework
 				var rawTargetWorldRotation = GetWorldAttachRotation(selectingInteractor);
 
 				//If we have a constraint, constrian the target position and rotation
-				if (m_Constraint)
+				if (m_Constraint != null)
 				{
 					m_Constraint.ConstrainTargetTransform(ref rawTargetWorldPosition, ref rawTargetWorldRotation);
 				}
@@ -797,15 +776,12 @@ namespace Framework
 
 			private void UpdateInteractorLocalPose(XRBaseInteractor interactor)
 			{
-				// In order to move the Interactable to the Interactor we need to
-				// calculate the Interactable attach point in the coordinate system of the
-				// Interactor's attach point.
-				var thisAttachTransform = m_AttachTransform != null ? m_AttachTransform : transform;
-				var attachOffset = transform.position - thisAttachTransform.position;
-				var localAttachOffset = thisAttachTransform.InverseTransformDirection(attachOffset);
+				//Find offset from interactors attach rotation and local rotation
+				InteractorLocalAttachRotation = Quaternion.Inverse(interactor.attachTransform.rotation) * this.transform.rotation;
 
-				SetInteractorLocalAttachPositionOffset(localAttachOffset);
-				SetInteractorLocalAttachRotationOffset(Quaternion.Inverse(Quaternion.Inverse(transform.rotation) * thisAttachTransform.rotation));
+				//Find position offset from interactors attach position in interactors attach transforms local space
+				Vector3 attachOffset = this.transform.position - interactor.attachTransform.position;
+				InteractorLocalAttachPosition = Quaternion.Inverse(InteractorLocalAttachRotation) * interactor.attachTransform.InverseTransformDirection(attachOffset);
 			}
 
 			private void SmoothVelocityStart()

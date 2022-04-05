@@ -23,9 +23,13 @@ namespace Framework
 					if (handInteractor != null)
 					{
 						if (args is GrabEventArgs | args is SelectEnterEventArgs)
-							handInteractor.ApplyHandPoserOnSelected(this);
+						{
+							handInteractor.ApplyHandPoserOnSelected(this, args.interactable);
+						}					
 						else if (args is HoverEnterEventArgs)
-							handInteractor.ApplyHandPoserOnHovered(this);
+						{
+							handInteractor.ApplyHandPoserOnHovered(this, args.interactable);
+						}
 					}
 				}
 
@@ -39,15 +43,47 @@ namespace Framework
 					if (handInteractor != null)
 					{
 						if (args is DropEventArgs || args is SelectExitEventArgs)
+						{
 							handInteractor.ClearHandPoserOnSelected(this);
+						}
 						else if (args is HoverExitEventArgs)
+						{
 							handInteractor.ClearHandPoserOnHovered(this);
+						}
 					}
 				}
 				#endregion
 
 				#region Virtual Interface
-				public abstract XRHandPose GetPose(XRHandGrabInteractor interactor);
+				public virtual void PreparePose(XRHandGrabInteractor interactor, XRBaseInteractable interactable)
+				{
+					//If interactible is a grab interactor then update grab offset so the object is grabbed at correct position for the hand pose
+					if (interactable is XRAdvancedGrabInteractable grabInteractable)
+					{
+						XRHandPose pose = GetPose(interactor, interactable);
+
+						if (pose._hasRotation)
+						{
+							//Find local rotation difference from interactable to this
+							Quaternion interactableAttachOffset = Quaternion.Inverse(interactable.transform.rotation) * pose._worldRotation;
+
+							//Find the local rotation difference from interactor to its attach transform
+							Quaternion interactorAttachOffset = Quaternion.Inverse(interactor.transform.rotation) * interactor.attachTransform.rotation;
+
+							//Local attach rotation is this realative to interactor attach transform rotation
+							grabInteractable.InteractorLocalAttachRotation = Quaternion.Inverse(interactorAttachOffset) * interactableAttachOffset;
+						}
+
+						if (pose._hasPosition)
+						{
+							//Find position offset from interactors attach position in interactors attach transforms local space
+							Vector3 attachOffset = interactable.transform.position - pose._worldPosition;
+							grabInteractable.InteractorLocalAttachPosition = Quaternion.Inverse(grabInteractable.InteractorLocalAttachRotation) * interactor.attachTransform.InverseTransformDirection(attachOffset);
+						}
+					}
+				}
+
+				public abstract XRHandPose GetPose(XRHandGrabInteractor interactor, XRBaseInteractable interactable);
 				#endregion
 			}
 		}
