@@ -77,11 +77,7 @@ namespace Framework
 				{
 					base.ProcessInteractor(updatePhase);
 
-					if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic)
-					{
-						PrepareHandPoses();
-					}
-					else if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Late || updatePhase == XRInteractionUpdateOrder.UpdatePhase.OnBeforeRender)
+					if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Late)
 					{
 						ApplyHandPoses();
 					}
@@ -108,18 +104,36 @@ namespace Framework
 
 				#region Public Interface
 				/// <summary>
-				/// Should be called by a XRHandPoser via a SelectEnterEvent
+				/// Should be called by a XRHandPoser via a OnGrab event
 				/// </summary>
-				public void ApplyHandPoserOnSelected(XRHandPoser poser, XRBaseInteractable interactable)
+				public void ApplyHandPoserOnGrabbed(XRHandPoser poser, XRBaseInteractable interactable)
 				{
 					_currentSelectedPoser = poser;
 					_currentSelectedPoserInteractable = interactable;
+
+					//If interactable is a GrabInteractable then calculated the attach offsets to place the hand at the correct pose on grab
+					if (interactable is XRAdvancedGrabInteractable grabInteractable)
+					{
+						XRHandPose pose = poser.GetPose(this, interactable);
+
+						if (pose._hasRotation)
+						{
+							//Find rotation offset of pose in interactable's own space
+							grabInteractable.InteractorLocalAttachRotation = Quaternion.Inverse(Quaternion.Inverse(grabInteractable.transform.rotation) * pose._worldRotation);
+						}
+
+						if (pose._hasPosition)
+						{
+							//Find position offset of pose in interactable's own space
+							grabInteractable.InteractorLocalAttachPosition = -grabInteractable.transform.InverseTransformPoint(pose._worldPosition);
+						}
+					}
 				}
 
 				/// <summary>
-				/// Should be called by a XRHandPoser via a SelectExitEventArgs
+				/// Should be called by a XRHandPoser via a OnDrop event
 				/// </summary>
-				public void ClearHandPoserOnSelected(XRHandPoser poser)
+				public void ClearHandPoserOnDropped(XRHandPoser poser)
 				{
 					if (_currentSelectedPoser == poser)
 					{
@@ -153,55 +167,6 @@ namespace Framework
 				#endregion
 
 				#region Private Functions
-				/// <summary>
-				/// Prepares any hand poses from current selected or hovered interactables.
-				/// </summary>
-				private void PrepareHandPoses()
-				{
-					if (_handVisuals != null)
-					{
-						//If selected interactable with a hand poser...
-						if (_currentSelectedPoser != null)
-						{
-							//If interactible is a grab interactor then update grab offset so the object is grabbed at correct position for the hand pose
-							if (_currentSelectedPoserInteractable is XRAdvancedGrabInteractable grabInteractable)
-							{
-								XRHandPose pose = _currentSelectedPoser.GetPose(this, _currentSelectedPoserInteractable);
-
-								if (pose._hasRotation)
-								{
-									//Find offset from interactible to pose rotation in interactible local space
-									Quaternion interactableAttachOffset = Quaternion.Inverse(grabInteractable.transform.rotation) * pose._worldRotation;
-
-									//Convert into world space relative to this controller (assume the interactible is placed on this controller)
-									Quaternion worldSpaceOffset = this.transform.rotation * interactableAttachOffset;
-
-									//Then convert into interacitble attach transform local space
-									Quaternion interactorAttachOffset = Quaternion.Inverse(this.attachTransform.rotation) * worldSpaceOffset;
-
-									//Set attachment roation offset
-									grabInteractable.InteractorLocalAttachRotation = interactorAttachOffset;
-								}
-
-								if (pose._hasPosition)
-								{
-									//Find offset from interactible to pose position in interactible local space
-									Vector3 interactableAttachOffset = grabInteractable.transform.InverseTransformDirection(pose._worldPosition - grabInteractable.transform.position);
-
-									//Convert into world space relative to this controller (assume the interactible is placed on this controller)
-									Vector3 worldSpaceOffset = this.transform.TransformDirection(interactableAttachOffset);
-
-									//Then convert into interacitble attach transform local space
-									Vector3 interactorSpaceOffset = this.attachTransform.InverseTransformDirection(worldSpaceOffset);
-									
-									//Set attachment position offset
-									grabInteractable.InteractorLocalAttachPosition = Quaternion.Inverse(grabInteractable.InteractorLocalAttachRotation) * interactorSpaceOffset;
-								} 
-							}
-						}
-					}
-				}
-
 				/// <summary>
 				/// Applies any hand poses from current selected or hovered interactables.
 				/// </summary>

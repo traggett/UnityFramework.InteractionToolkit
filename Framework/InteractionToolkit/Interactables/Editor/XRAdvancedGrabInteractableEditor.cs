@@ -15,8 +15,6 @@ namespace Framework
             [CustomEditor(typeof(XRAdvancedGrabInteractable), true), CanEditMultipleObjects]
             public class XRAdvancedGrabInteractableEditor : XRBaseInteractableEditor
             {
-                /// <summary><see cref="SerializedProperty"/> of the <see cref="SerializeField"/> backing <see cref="XRGrabInteractable.attachTransform"/>.</summary>
-                protected SerializedProperty m_AttachTransform;
                 /// <summary><see cref="SerializedProperty"/> of the <see cref="SerializeField"/> backing <see cref="XRGrabInteractable.attachEaseInTime"/>.</summary>
                 protected SerializedProperty m_AttachEaseInTime;
                 /// <summary><see cref="SerializedProperty"/> of the <see cref="SerializeField"/> backing <see cref="XRGrabInteractable.movementType"/>.</summary>
@@ -120,7 +118,6 @@ namespace Framework
                 {
                     base.OnEnable();
 
-                    m_AttachTransform = serializedObject.FindProperty("m_AttachTransform");
                     m_AttachEaseInTime = serializedObject.FindProperty("m_AttachEaseInTime");
                     m_MovementType = serializedObject.FindProperty("m_MovementType");
                     m_VelocityDamping = serializedObject.FindProperty("m_VelocityDamping");
@@ -251,7 +248,6 @@ namespace Framework
                 /// </summary>
                 protected virtual void DrawAttachConfiguration()
                 {
-                    EditorGUILayout.PropertyField(m_AttachTransform, Contents.attachTransform);
                     EditorGUILayout.PropertyField(m_AttachEaseInTime, Contents.attachEaseInTime);
                 }
             }

@@ -24,7 +24,7 @@ namespace Framework
 					{
 						if (args is GrabEventArgs | args is SelectEnterEventArgs)
 						{
-							handInteractor.ApplyHandPoserOnSelected(this, args.interactable);
+							handInteractor.ApplyHandPoserOnGrabbed(this, args.interactable);
 						}					
 						else if (args is HoverEnterEventArgs)
 						{
@@ -44,7 +44,7 @@ namespace Framework
 					{
 						if (args is DropEventArgs || args is SelectExitEventArgs)
 						{
-							handInteractor.ClearHandPoserOnSelected(this);
+							handInteractor.ClearHandPoserOnDropped(this);
 						}
 						else if (args is HoverExitEventArgs)
 						{

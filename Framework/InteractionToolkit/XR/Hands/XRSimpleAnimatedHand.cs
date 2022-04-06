@@ -35,12 +35,6 @@ namespace Framework
 				public XRNode _handNode = XRNode.RightHand;
 
 				/// <summary>
-				/// The origin for poses
-				/// When a position or rotation is set on a pose it will position the hand relative to this.
-				/// </summary>
-				public Transform _poseOrigin;
-
-				/// <summary>
 				/// The root of the hands visuals.
 				/// These will be moved away from the controller if an override pose is applied so should be different to the controller root.
 				/// </summary>
@@ -104,11 +98,6 @@ namespace Framework
 				#endregion
 
 				#region Unity Messages
-				private void Awake()
-				{
-				   
-				}
-
 				private void Start()
 				{
 					// Get animator layer indices by name, for later use switching between hand visuals
@@ -189,7 +178,7 @@ namespace Framework
 						_animator.SetFloat(_animParamIndexPoint, pointAmount);
 					}
 				}
-
+				
 				private void ApplyOverridePose()
 				{
 					//Transiton to / from override pose
@@ -207,10 +196,7 @@ namespace Framework
 						//Apply rotation
 						if (_overridePose._hasRotation)
 						{
-							Quaternion targetRotation = _overridePose._worldRotation;
-
-							//Add origin offset
-							targetRotation *= (Quaternion.Inverse(this.transform.rotation) * _poseOrigin.rotation);
+							Quaternion targetRotation = GetVisualsWorldRotation(_overridePose);
 
 							if (_overridePoseLerp < 1f)
 							{
@@ -236,11 +222,8 @@ namespace Framework
 						//Apply position
 						if (_overridePose._hasPosition)
 						{
-							Vector3 targetPosition = _overridePose._worldPosition;
+							Vector3 targetPosition = GetVisualsWorldPosition(_overridePose);
 
-							//Add origin offset
-							targetPosition += (this.transform.position - _poseOrigin.position);
-						
 							if (_overridePoseLerp < 1f)
 							{
 								_visualsRoot.transform.position = Vector3.Lerp(_visualsRoot.transform.position, targetPosition, _overridePoseLerp);
