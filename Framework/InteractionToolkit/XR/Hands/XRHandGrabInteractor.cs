@@ -182,7 +182,7 @@ namespace Framework
 						//If selected interactable with a hand poser...
 						if (_currentSelectedPoser != null)
 						{
-							XRHandPose handPose = _currentSelectedPoser.GetPose(this, _currentSelectedPoserInteractable);
+							XRHandPose handPose = GetPose(_currentSelectedPoser, _currentSelectedPoserInteractable);
 
 							if (IsPosePositionOk(handPose, _maxSelectedOverridePoseDistance)
 								&& IsPoseRotationOk(handPose, _maxSelectedOverridePoseRotation))
@@ -197,7 +197,7 @@ namespace Framework
 						//If hovered over interactable with a hand poser...
 						else if (_currentHoveredPoser != null)
 						{
-							XRHandPose handPose = _currentHoveredPoser.GetPose(this, _currentHoveredPoserInteractable);
+							XRHandPose handPose = GetPose(_currentHoveredPoser, _currentHoveredPoserInteractable);
 
 							if (IsPosePositionOk(handPose, _maxHoveredOverridePoseDistance) 
 								&& IsPoseRotationOk(handPose, _maxHoveredOverridePoseRotation))
@@ -272,6 +272,20 @@ namespace Framework
 					{
 						interactionManager.HoverCancel(this, hoverTargets[i]);
 					}
+				}
+
+				private XRHandPose GetPose(XRHandPoser handPoser, XRBaseInteractable interactable)
+				{
+					XRHandPose handPose = handPoser.GetPose(this, interactable);
+
+					//If interactible is easing in (lerping to position) then ignore position and rotation until its there
+					if (interactable is XRAdvancedGrabInteractable grabInteractable && grabInteractable.IsEasingIn())
+					{
+						handPose._hasPosition = false;
+						handPose._hasRotation = false;
+					}
+
+					return handPose;
 				}
 				#endregion
 			}

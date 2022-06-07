@@ -415,6 +415,11 @@ namespace Framework
 				return m_DetachVelocity;
 			}
 
+			public bool IsEasingIn()
+			{
+				return isSelected && m_AttachEaseInTime > 0f && m_CurrentAttachEaseTime < m_AttachEaseInTime;
+			}
+
 			#region Unity Messages
 			protected override void Awake()
 			{
@@ -449,8 +454,8 @@ namespace Framework
 				// Initialize target pose for easing and smoothing
 				m_TargetWorldPosition = transform.position;
 				m_TargetWorldRotation = transform.rotation;
-				m_CurrentAttachEaseTime = 0f;
 
+				m_CurrentAttachEaseTime = 0f;
 
 				//Work out where to attach the object to.
 				UpdateInteractorLocalPose(selectingInteractor);
@@ -670,12 +675,21 @@ namespace Framework
 				}
 
 				// Apply smoothing (if configured)
-				if (m_AttachEaseInTime > 0f && m_CurrentAttachEaseTime <= m_AttachEaseInTime)
+				if (m_AttachEaseInTime > 0f && m_CurrentAttachEaseTime < m_AttachEaseInTime)
 				{
-					var easePercent = m_CurrentAttachEaseTime / m_AttachEaseInTime;
-					m_TargetWorldPosition = Vector3.Lerp(m_TargetWorldPosition, rawTargetWorldPosition, easePercent);
-					m_TargetWorldRotation = Quaternion.Slerp(m_TargetWorldRotation, rawTargetWorldRotation, easePercent);
 					m_CurrentAttachEaseTime += timeDelta;
+
+					if (m_CurrentAttachEaseTime >= m_AttachEaseInTime)
+					{
+						m_TargetWorldPosition = rawTargetWorldPosition;
+						m_TargetWorldRotation = rawTargetWorldRotation;
+					}
+					else
+					{
+						var easePercent = Mathf.Clamp01(m_CurrentAttachEaseTime / m_AttachEaseInTime);
+						m_TargetWorldPosition = Vector3.Lerp(m_TargetWorldPosition, rawTargetWorldPosition, easePercent);
+						m_TargetWorldRotation = Quaternion.Slerp(m_TargetWorldRotation, rawTargetWorldRotation, easePercent);
+					}
 				}
 				else
 				{
