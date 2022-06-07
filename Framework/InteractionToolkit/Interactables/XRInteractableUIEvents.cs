@@ -8,9 +8,10 @@ namespace Framework
 	namespace Interaction.Toolkit
 	{
 		/// <summary>
-		/// Component that will trigger UI Pointer events from on XRInteractors
+		/// Component can be added to a XRBaseInteractable that will trigger UI Pointer events from on XRInteractors
 		/// This means your other components can implement OnPointerDown or OnPointerClick etc
 		/// </summary>
+		[RequireComponent(typeof(XRBaseInteractable))]
 		public class XRInteractableUIEvents : MonoBehaviour
 		{
 			#region Private Data
@@ -19,6 +20,28 @@ namespace Framework
 			#endregion
 
 			#region Unity Messages
+			private void Awake()
+			{
+				XRBaseInteractable interactable = GetComponent<XRBaseInteractable>();
+
+				if (interactable != null)
+				{
+					interactable.hoverEntered.AddListener(OnHoverEnter);
+					interactable.hoverExited.AddListener(OnHoverExit);
+				}
+			}
+
+			private void OnDestroy()
+			{
+				XRBaseInteractable interactable = GetComponent<XRBaseInteractable>();
+
+				if (interactable != null)
+				{
+					interactable.hoverEntered.RemoveListener(OnHoverEnter);
+					interactable.hoverExited.RemoveListener(OnHoverExit);
+				}
+			}
+
 			private void OnEnable()
 			{
 				_hoveredInteractors.Clear();
@@ -68,10 +91,7 @@ namespace Framework
 			}
 			#endregion
 
-			#region Public Inteface
-			/// <summary>
-			/// Should be called by a XRBaseInteractable via a HoverEnterEvent.
-			/// </summary>
+			#region Private Functions
 			public void OnHoverEnter(HoverEnterEventArgs args)
 			{
 				if (args.interactor is XRBaseControllerInteractor controllerInteractor)
@@ -81,9 +101,6 @@ namespace Framework
 				}
 			}
 
-			/// <summary>
-			/// Should be called by a XRBaseInteractable via a HoverExitEvent.
-			/// </summary>
 			public void OnHoverExit(HoverExitEventArgs args)
 			{
 				if (args.interactor is XRBaseControllerInteractor controllerInteractor)
@@ -92,9 +109,7 @@ namespace Framework
 					OnUIHoverExit();
 				}
 			}
-			#endregion
-
-			#region Private Functions
+			
 			private void OnUIHoverEnter()
 			{
 				PointerEventData eventData = new PointerEventData(EventSystem.current)
