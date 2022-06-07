@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -10,7 +11,7 @@ namespace Framework
 		/// Component that will trigger UI Pointer events from on XRInteractors
 		/// This means your other components can implement OnPointerDown or OnPointerClick etc
 		/// </summary>
-		public class XRInteractableUIEvents : XRBaseInteractable
+		public class XRInteractableUIEvents : MonoBehaviour
 		{
 			#region Private Data
 			private List<XRBaseControllerInteractor> _hoveredInteractors = new List<XRBaseControllerInteractor>();
@@ -18,37 +19,25 @@ namespace Framework
 			#endregion
 
 			#region Unity Messages
-			protected override void Awake()
+			private void OnEnable()
 			{
-				base.Awake();
-
-				this.hoverEntered.AddListener(OnHoverEnter);
-				this.hoverExited.AddListener(OnHoverExit);
-			}
-
-			protected override void OnEnable()
-			{
-				base.OnEnable();
-
 				_hoveredInteractors.Clear();
 				_presssControllers.Clear();
 			}
 
-			protected override void OnDisable()
+			private void OnDisable()
 			{
-				base.OnDisable();
-
 				if (_hoveredInteractors.Count > 0)
 				{
 					OnUIHoverExit();
 					_hoveredInteractors.Clear();
 				}
-					
+
 				if (_presssControllers.Count > 0)
 				{
 					OnUIPointerUp();
 					_presssControllers.Clear();
-				}			
+				}
 			}
 
 			private void Update()
@@ -79,17 +68,23 @@ namespace Framework
 			}
 			#endregion
 
-			#region Private Functions
-			private void OnHoverEnter(HoverEnterEventArgs args)
+			#region Public Inteface
+			/// <summary>
+			/// Should be called by a XRBaseInteractable via a HoverEnterEvent.
+			/// </summary>
+			public void OnHoverEnter(HoverEnterEventArgs args)
 			{
 				if (args.interactor is XRBaseControllerInteractor controllerInteractor)
 				{
 					_hoveredInteractors.Add(controllerInteractor);
 					OnUIHoverEnter();
-				}				
+				}
 			}
 
-			private void OnHoverExit(HoverExitEventArgs args)
+			/// <summary>
+			/// Should be called by a XRBaseInteractable via a HoverExitEvent.
+			/// </summary>
+			public void OnHoverExit(HoverExitEventArgs args)
 			{
 				if (args.interactor is XRBaseControllerInteractor controllerInteractor)
 				{
@@ -97,7 +92,9 @@ namespace Framework
 					OnUIHoverExit();
 				}
 			}
+			#endregion
 
+			#region Private Functions
 			private void OnUIHoverEnter()
 			{
 				PointerEventData eventData = new PointerEventData(EventSystem.current)
@@ -149,5 +146,6 @@ namespace Framework
 			}
 			#endregion
 		}
+
 	}
 }
