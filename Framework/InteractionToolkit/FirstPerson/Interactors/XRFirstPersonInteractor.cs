@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace Framework
@@ -78,6 +79,11 @@ namespace Framework
 
 
 			#region IXRGrabInteractor
+			public XRNode GetGrabNode()
+			{
+				return XRNode.RightHand;
+			}
+
 			public bool CanGrab()
 			{
 				return true;

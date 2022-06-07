@@ -41,7 +41,7 @@ namespace Framework
 				#endregion
 
 				#region XRHandPoser
-				public override XRHandPose GetPose(XRHandGrabInteractor interactor, XRBaseInteractable interactable)
+				public override XRHandPose GetPose(XRBaseInteractor interactor, XRBaseInteractable interactable)
 				{
 					_pose._hasPosition = _constrainPosition;
 
@@ -71,13 +71,16 @@ namespace Framework
 						_pose._worldRotation = this.transform.rotation;
 					}
 
-					if (interactor.HandVisuals.XRNode == UnityEngine.XR.XRNode.LeftHand)
+					if (interactor is IXRGrabInteractor grabInteractor)
 					{
-						_pose._animation = _leftHandPoseAnimation;
-					}
-					else
-					{
-						_pose._animation = _rightHandPoseAnimation;
+						if (grabInteractor.GetGrabNode() == UnityEngine.XR.XRNode.LeftHand)
+						{
+							_pose._animation = _leftHandPoseAnimation;
+						}
+						else
+						{
+							_pose._animation = _rightHandPoseAnimation;
+						}
 					}
 
 					return _pose;

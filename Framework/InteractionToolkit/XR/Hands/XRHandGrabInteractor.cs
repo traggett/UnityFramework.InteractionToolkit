@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace Framework
@@ -85,6 +86,11 @@ namespace Framework
 				#endregion
 
 				#region IXRGrabInteractor
+				public XRNode GetGrabNode()
+				{
+					return _handVisuals.XRNode;
+				}
+
 				public bool CanGrab()
 				{
 					//Only count as grabbing when not moving from or to and override pose (otherwise will pick up object whilst lerp back fom another interaction)

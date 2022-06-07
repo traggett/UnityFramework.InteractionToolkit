@@ -55,7 +55,7 @@ namespace Framework
 				#endregion
 
 				#region Virtual Interface
-				public abstract XRHandPose GetPose(XRHandGrabInteractor interactor, XRBaseInteractable interactable);
+				public abstract XRHandPose GetPose(XRBaseInteractor interactor, XRBaseInteractable interactable);
 				#endregion
 			}
 		}
