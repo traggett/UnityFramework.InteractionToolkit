@@ -11,7 +11,7 @@ namespace Framework
 			/// <summary>
 			/// Interactor used to grab things at a distance by first highlighting them using a ray.
 			/// </summary>
-			public class VRRayGrabInteractor : XRRayInteractor, IXRGrabInteractor, IXRHandInteractor
+			public class XRHandRayInteractor : XRRayInteractor, IXRGrabInteractor, IXRHandInteractor
 			{
 				#region Public Data
 				/// <summary>
