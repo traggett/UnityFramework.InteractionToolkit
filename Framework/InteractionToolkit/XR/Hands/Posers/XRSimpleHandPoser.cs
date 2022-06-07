@@ -7,7 +7,6 @@ namespace Framework
 	{
 		namespace XR
 		{
-
 			public class XRSimpleHandPoser : XRHandPoser
 			{
 				#region Public Data
@@ -34,7 +33,7 @@ namespace Framework
 				#endregion
 
 				#region XRHandPoser
-				public override XRHandPose GetPose(XRBaseInteractor interactor, XRBaseInteractable interactable)
+				public override XRHandPose GetPose(IXRHandInteractor interactor, XRBaseInteractable interactable)
 				{
 					_pose._hasRotation = _constrainRotation;
 
@@ -50,18 +49,15 @@ namespace Framework
 						_pose._worldPosition = this.transform.position;
 					}
 
-					if (interactor is IXRGrabInteractor grabInteractor)
+					if (interactor.HandNode == UnityEngine.XR.XRNode.LeftHand)
 					{
-						if (grabInteractor.GetGrabNode() == UnityEngine.XR.XRNode.LeftHand)
-						{
-							_pose._animation = _leftHandPoseAnimation;
-						}
-						else
-						{
-							_pose._animation = _rightHandPoseAnimation;
-						}
+						_pose._animation = _leftHandPoseAnimation;
 					}
-					
+					else
+					{
+						_pose._animation = _rightHandPoseAnimation;
+					}
+
 					return _pose;
 				}
 				#endregion

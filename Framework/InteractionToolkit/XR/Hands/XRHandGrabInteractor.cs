@@ -13,7 +13,7 @@ namespace Framework
 			/// This is used by the hands to pick things up or interact with things directly (eg press a button)
 			/// It can be forced into poses whilst hovering or selecting interactables (eg correct grab pose whilst grabbing a lever).
 			/// </summary>
-			public class XRHandGrabInteractor : XRDirectInteractor, IXRGrabInteractor
+			public class XRHandGrabInteractor : XRDirectInteractor, IXRGrabInteractor, IXRHandInteractor
 			{
 				#region Public Data
 				/// <summary>
@@ -86,11 +86,6 @@ namespace Framework
 				#endregion
 
 				#region IXRGrabInteractor
-				public XRNode GetGrabNode()
-				{
-					return _handVisuals.XRNode;
-				}
-
 				public bool CanGrab()
 				{
 					//Only count as grabbing when not moving from or to and override pose (otherwise will pick up object whilst lerp back fom another interaction)
@@ -108,11 +103,24 @@ namespace Framework
 				}
 				#endregion
 
-				#region Public Interface
-				/// <summary>
-				/// Should be called by a XRHandPoser via a OnGrab event
-				/// </summary>
-				public void ApplyHandPoserOnGrabbed(XRHandPoser poser, XRBaseInteractable interactable)
+				#region IXRHandInteractor
+				public XRNode HandNode
+				{
+					get
+					{
+						return _handVisuals.XRNode;
+					}
+				}
+
+				public XRBaseInteractor Interactor
+				{
+					get
+					{
+						return this;
+					}
+				}
+
+				public void ApplyHandPoseOnGrabbed(XRHandPoser poser, XRBaseInteractable interactable)
 				{
 					_currentSelectedPoser = poser;
 					_currentSelectedPoserInteractable = interactable;
@@ -136,10 +144,7 @@ namespace Framework
 					}
 				}
 
-				/// <summary>
-				/// Should be called by a XRHandPoser via a OnDrop event
-				/// </summary>
-				public void ClearHandPoserOnDropped(XRHandPoser poser)
+				public void ClearHandPoseOnDropped(XRHandPoser poser)
 				{
 					if (_currentSelectedPoser == poser)
 					{
@@ -149,19 +154,13 @@ namespace Framework
 					}
 				}
 
-				/// <summary>
-				/// Should be called by a XRHandPoser via a HoverEnterEventArgs
-				/// </summary>
-				public void ApplyHandPoserOnHovered(XRHandPoser poser, XRBaseInteractable interactable)
+				public void ApplyHandPoseOnHovered(XRHandPoser poser, XRBaseInteractable interactable)
 				{
 					_currentHoveredPoser = poser;
 					_currentHoveredPoserInteractable = interactable;
 				}
 
-				/// <summary>
-				/// Should be called by a XRHandPoser via a HoverExitEventArgs
-				/// </summary>
-				public void ClearHandPoserOnHovered(XRHandPoser poser)
+				public void ClearHandPoseOnHovered(XRHandPoser poser)
 				{
 					if (_currentHoveredPoser == poser)
 					{

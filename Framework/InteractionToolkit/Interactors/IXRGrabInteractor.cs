@@ -21,11 +21,6 @@ namespace Framework
 			/// Returns if the grab interactor is currently hovering over an interactible.
 			/// </summary>
 			bool IsHoveringOverGrabbable();
-
-			/// <summary>
-			/// Returns the XR Node of the controller driving the interactor.
-			/// </summary>
-			XRNode GetGrabNode();
 			#endregion
 		}
 	}

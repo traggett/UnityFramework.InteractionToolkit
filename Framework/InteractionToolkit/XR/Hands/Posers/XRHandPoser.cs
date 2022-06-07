@@ -18,17 +18,15 @@ namespace Framework
 				/// </summary>
 				public void SetHandPose(BaseInteractionEventArgs args)
 				{
-					XRHandGrabInteractor handInteractor = args.interactor as XRHandGrabInteractor;
-
-					if (handInteractor != null)
+					if (args.interactor is IXRHandInteractor handInteractor)
 					{
 						if (args is GrabEventArgs | args is SelectEnterEventArgs)
 						{
-							handInteractor.ApplyHandPoserOnGrabbed(this, args.interactable);
-						}					
+							handInteractor.ApplyHandPoseOnGrabbed(this, args.interactable);
+						}
 						else if (args is HoverEnterEventArgs)
 						{
-							handInteractor.ApplyHandPoserOnHovered(this, args.interactable);
+							handInteractor.ApplyHandPoseOnHovered(this, args.interactable);
 						}
 					}
 				}
@@ -38,24 +36,22 @@ namespace Framework
 				/// </summary>
 				public void ClearHandPose(BaseInteractionEventArgs args)
 				{
-					XRHandGrabInteractor handInteractor = args.interactor as XRHandGrabInteractor;
-
-					if (handInteractor != null)
+					if (args.interactor is IXRHandInteractor handInteractor)
 					{
 						if (args is DropEventArgs || args is SelectExitEventArgs)
 						{
-							handInteractor.ClearHandPoserOnDropped(this);
+							handInteractor.ClearHandPoseOnDropped(this);
 						}
 						else if (args is HoverExitEventArgs)
 						{
-							handInteractor.ClearHandPoserOnHovered(this);
+							handInteractor.ClearHandPoseOnHovered(this);
 						}
 					}
 				}
 				#endregion
 
 				#region Virtual Interface
-				public abstract XRHandPose GetPose(XRBaseInteractor interactor, XRBaseInteractable interactable);
+				public abstract XRHandPose GetPose(IXRHandInteractor interactor, XRBaseInteractable interactable);
 				#endregion
 			}
 		}
