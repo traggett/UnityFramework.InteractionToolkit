@@ -81,24 +81,9 @@ namespace Framework
 
 
 				#region IXRGrabInteractor
-				public XRNode GetGrabNode()
-				{
-					return XRNode.RightHand;
-				}
-
-				public bool CanGrab()
+				public bool IsGrabbedObjectAttached()
 				{
 					return true;
-				}
-
-				public bool IsGrabbing()
-				{
-					return selectTarget != null && CanGrab();
-				}
-
-				public bool IsHoveringOverGrabbable()
-				{
-					return hoverTargets.Count > 0 && CanGrab();
 				}
 				#endregion
 

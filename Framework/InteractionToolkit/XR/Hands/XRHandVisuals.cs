@@ -14,9 +14,9 @@ namespace Framework
 			public abstract class XRHandVisuals : MonoBehaviour
 			{
 				/// <summary>
-				/// The grab interactor associated with these visuals.
+				/// The <see cref="Transform"/> that is used as the attach point for Interactables.
 				/// </summary>
-				public XRHandGrabInteractor _grabInteractor;
+				public Transform _attachTransform;
 
 				// <summary>
 				/// Used to define which hand these visuals are relate to (left or right).
@@ -40,14 +40,14 @@ namespace Framework
 				protected Quaternion GetVisualsWorldRotation(XRHandPose pose)
 				{
 					//The pose rotation is where the attach transform should be so need to take out the offset of this attach transform to get a target for the visuals
-					Quaternion attachRotationOffset = Quaternion.Inverse(this.transform.rotation) * _grabInteractor.attachTransform.rotation;
+					Quaternion attachRotationOffset = Quaternion.Inverse(this.transform.rotation) * _attachTransform.rotation;
 					return pose._worldRotation * Quaternion.Inverse(attachRotationOffset);
 				}
 
 				protected Vector3 GetVisualsWorldPosition(XRHandPose pose)
 				{
 					//The pose position is where the attach transform should be so need to take out the offset of this attach transform to get a target for the visuals
-					Vector3 attachPositionOffset = _grabInteractor.attachTransform.position - this.transform.position;
+					Vector3 attachPositionOffset = _attachTransform.position - this.transform.position;
 					return pose._worldPosition - attachPositionOffset;
 				}
 				#endregion

@@ -549,7 +549,7 @@ namespace Framework
 					// During Fixed update we want to perform any physics-based updates (e.g., Kinematic or VelocityTracking).
 					case XRInteractionUpdateOrder.UpdatePhase.Fixed:
 						{
-							if (IsGrabbed())
+							if (IsAttachedToInteractor())
 							{
 								if (m_CurrentMovementType == MovementType.Kinematic)
 									PerformKinematicUpdate(updatePhase);
@@ -562,7 +562,7 @@ namespace Framework
 					// During Dynamic update we want to perform any Transform-based manipulation (e.g., Instantaneous).
 					case XRInteractionUpdateOrder.UpdatePhase.Dynamic:
 						{
-							if (IsGrabbed())
+							if (IsAttachedToInteractor())
 							{
 								UpdateTarget(Time.deltaTime);
 								SmoothVelocityUpdate();
@@ -576,7 +576,7 @@ namespace Framework
 					// During OnBeforeRender we want to perform any last minute Transform position changes before rendering (e.g., Instantaneous).
 					case XRInteractionUpdateOrder.UpdatePhase.OnBeforeRender:
 						{
-							if (IsGrabbed())
+							if (IsAttachedToInteractor())
 							{
 								UpdateTarget(Time.deltaTime);
 
@@ -637,13 +637,13 @@ namespace Framework
 			#endregion
 
 			#region Private Functions
-			private bool IsGrabbed()
+			private bool IsAttachedToInteractor()
 			{
 				if (isSelected)
 				{
 					if (selectingInteractor is IXRGrabInteractor grabInteractor)
 					{
-						return grabInteractor.CanGrab();
+						return grabInteractor.IsGrabbedObjectAttached();
 					}
 
 					return true;

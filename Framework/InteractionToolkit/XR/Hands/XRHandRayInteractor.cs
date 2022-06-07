@@ -44,13 +44,6 @@ namespace Framework
 				#endregion
 
 				#region XRRayInteractor
-				public override bool CanHover(XRBaseInteractable interactable)
-				{
-					//Don't allow hovering on returning from an override pose.
-					//eg if a pose was too far way from the interacble and the interaction was cancelled, dont allow hovering objects whilst the pose is transitoned back to the interactor.
-					return !_handVisuals.IsReturningFromOverridePose() && base.CanHover(interactable);
-				}
-
 				public override bool CanSelect(XRBaseInteractable interactable)
 				{
 					//Don't allow selecting on returning from an override pose.
@@ -70,20 +63,9 @@ namespace Framework
 				#endregion
 
 				#region IXRGrabInteractor
-				public bool CanGrab()
+				public bool IsGrabbedObjectAttached()
 				{
-					//Only count as grabbing when not moving from or to and override pose (otherwise will pick up object whilst lerp back fom another interaction)
-					return !_handVisuals.IsEnteringOverridePose() && !_handVisuals.IsReturningFromOverridePose();
-				}
-
-				public bool IsGrabbing()
-				{
-					return selectTarget != null && CanGrab();
-				}
-
-				public bool IsHoveringOverGrabbable()
-				{
-					return hoverTargets.Count > 0 && CanGrab();
+					return true;
 				}
 				#endregion
 

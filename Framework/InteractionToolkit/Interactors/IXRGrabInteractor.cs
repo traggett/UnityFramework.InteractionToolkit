@@ -1,6 +1,4 @@
-﻿using UnityEngine.XR;
-
-namespace Framework
+﻿namespace Framework
 {
 	namespace Interaction.Toolkit
 	{
@@ -10,17 +8,7 @@ namespace Framework
 			/// <summary>
 			/// Returns if the grab interactor can actually grab an avialable interactible.
 			/// </summary>
-			bool CanGrab();
-
-			/// <summary>
-			/// Returns if the grab interactor is currently grabbing an interactible.
-			/// </summary>
-			bool IsGrabbing();
-
-			/// <summary>
-			/// Returns if the grab interactor is currently hovering over an interactible.
-			/// </summary>
-			bool IsHoveringOverGrabbable();
+			bool IsGrabbedObjectAttached();
 			#endregion
 		}
 	}
