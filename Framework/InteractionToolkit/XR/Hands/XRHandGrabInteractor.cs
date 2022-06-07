@@ -185,7 +185,7 @@ namespace Framework
 							XRHandPose handPose = _currentSelectedPoser.GetPose(this, _currentSelectedPoserInteractable);
 
 							if (IsPosePositionOk(handPose, _maxSelectedOverridePoseDistance)
-								&& IsPoseRotationOk(handPose, _maxHoveredOverridePoseRotation))
+								&& IsPoseRotationOk(handPose, _maxSelectedOverridePoseRotation))
 							{
 								_handVisuals.ApplyOverridePose(handPose);
 							}
@@ -199,7 +199,7 @@ namespace Framework
 						{
 							XRHandPose handPose = _currentHoveredPoser.GetPose(this, _currentHoveredPoserInteractable);
 
-							if (IsPosePositionOk(handPose, _maxSelectedOverridePoseDistance) 
+							if (IsPosePositionOk(handPose, _maxHoveredOverridePoseDistance) 
 								&& IsPoseRotationOk(handPose, _maxHoveredOverridePoseRotation))
 							{
 								_handVisuals.ApplyOverridePose(handPose);
