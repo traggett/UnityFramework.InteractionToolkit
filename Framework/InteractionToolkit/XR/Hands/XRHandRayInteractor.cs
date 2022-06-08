@@ -44,6 +44,37 @@ namespace Framework
 				#endregion
 
 				#region XRRayInteractor
+				protected override void Awake()
+				{
+					base.Awake();
+
+					//FUCK UNITYS CODE
+					Destroy(originalAttachTransform.gameObject);
+					originalAttachTransform = null;
+				}
+
+				protected override void OnSelectEntering(SelectEnterEventArgs args)
+				{
+					//FUCK UNITYS CODE
+					originalAttachTransform = attachTransform;
+
+					base.OnSelectEntering(args);
+
+					//FUCK UNITYS CODE
+					originalAttachTransform = null;
+				}
+
+				protected override void OnSelectExiting(SelectExitEventArgs args)
+				{
+					//FUCK UNITYS CODE
+					originalAttachTransform = attachTransform;
+
+					base.OnSelectExiting(args);
+
+					//FUCK UNITYS CODE
+					originalAttachTransform = null;
+				}
+
 				public override bool CanSelect(XRBaseInteractable interactable)
 				{
 					//Don't allow selecting on returning from an override pose.
