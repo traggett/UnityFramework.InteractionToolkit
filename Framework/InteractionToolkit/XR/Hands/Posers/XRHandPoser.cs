@@ -14,31 +14,31 @@ namespace Framework
 			{
 				#region Public Interface
 				/// <summary>
-				/// Hook this function up to the OnGrab, SelectEnter or HoverEnter events on an XRBaseInteractable
+				/// Hook this function up to the OnGrab or HoverEnter events on an XRBaseInteractable
 				/// </summary>
 				public void SetHandPose(BaseInteractionEventArgs args)
 				{
-					if (args.interactor is IXRHandInteractor handInteractor)
+					if (args.interactorObject is IXRHandInteractor handInteractor)
 					{
-						if (args is GrabEventArgs | args is SelectEnterEventArgs)
+						if (args is GrabEventArgs)
 						{
-							handInteractor.ApplyHandPoseOnGrabbed(this, args.interactable);
+							handInteractor.ApplyHandPoseOnGrabbed(this, args.interactableObject);
 						}
 						else if (args is HoverEnterEventArgs)
 						{
-							handInteractor.ApplyHandPoseOnHovered(this, args.interactable);
+							handInteractor.ApplyHandPoseOnHovered(this, args.interactableObject);
 						}
 					}
 				}
 
 				/// <summary>
-				/// Hook this function up to the OnDrop, SelectExit or HoverExit event on an XRBaseInteractable
+				/// Hook this function up to the OnDrop or HoverExit event on an XRBaseInteractable
 				/// </summary>
 				public void ClearHandPose(BaseInteractionEventArgs args)
 				{
-					if (args.interactor is IXRHandInteractor handInteractor)
+					if (args.interactorObject is IXRHandInteractor handInteractor)
 					{
-						if (args is DropEventArgs || args is SelectExitEventArgs)
+						if (args is DropEventArgs)
 						{
 							handInteractor.ClearHandPoseOnDropped(this);
 						}
@@ -51,7 +51,7 @@ namespace Framework
 				#endregion
 
 				#region Virtual Interface
-				public abstract XRHandPose GetPose(IXRHandInteractor interactor, XRBaseInteractable interactable);
+				public abstract XRHandPose GetPose(IXRHandInteractor interactor, IXRInteractable interactable);
 				#endregion
 			}
 		}

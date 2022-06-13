@@ -54,20 +54,20 @@ namespace Framework
 				[SerializeField]
 				private XRHandVisuals _handVisuals;
 				private XRHandPoser _currentSelectedPoser;
-				private XRBaseInteractable _currentSelectedPoserInteractable;
+				private IXRInteractable _currentSelectedPoserInteractable;
 				private XRHandPoser _currentHoveredPoser;
-				private XRBaseInteractable _currentHoveredPoserInteractable;
+				private IXRInteractable _currentHoveredPoserInteractable;
 				#endregion
 
 				#region XRDirectInteractor
-				public override bool CanHover(XRBaseInteractable interactable)
+				public override bool CanHover(IXRHoverInteractable interactable)
 				{
 					//Don't allow hovering on returning from an override pose.
 					//eg if a pose was too far way from the interacble and the interaction was cancelled, dont allow hovering objects whilst the pose is transitoned back to the interactor.
 					return !_handVisuals.IsReturningFromOverridePose() && base.CanHover(interactable);
 				}
 
-				public override bool CanSelect(XRBaseInteractable interactable)
+				public override bool CanSelect(IXRSelectInteractable interactable)
 				{
 					//Don't allow selecting on returning from an override pose.
 					//eg if a pose was too far way from the interacble and the interaction was cancelled, dont allow hovering objects whilst the pose is transitoned back to the interactor.
@@ -110,7 +110,7 @@ namespace Framework
 					}
 				}
 
-				public void ApplyHandPoseOnGrabbed(XRHandPoser poser, XRBaseInteractable interactable)
+				public void ApplyHandPoseOnGrabbed(XRHandPoser poser, IXRInteractable interactable)
 				{
 					_currentSelectedPoser = poser;
 					_currentSelectedPoserInteractable = interactable;
@@ -144,7 +144,7 @@ namespace Framework
 					}
 				}
 
-				public void ApplyHandPoseOnHovered(XRHandPoser poser, XRBaseInteractable interactable)
+				public void ApplyHandPoseOnHovered(XRHandPoser poser, IXRInteractable interactable)
 				{
 					_currentHoveredPoser = poser;
 					_currentHoveredPoserInteractable = interactable;
@@ -246,9 +246,9 @@ namespace Framework
 
 					_currentSelectedPoser = null;
 
-					if (selectTarget != null)
+					for (int i = 0; i < interactablesSelected.Count; i++)
 					{
-						interactionManager.SelectCancel(this, selectTarget);
+						interactionManager.SelectCancel(this, interactablesSelected[i]);
 					}
 				}
 
@@ -258,13 +258,13 @@ namespace Framework
 
 					_currentHoveredPoser = null;
 
-					for (int i = 0; i < hoverTargets.Count; i++)
+					for (int i = 0; i < interactablesHovered.Count; i++)
 					{
-						interactionManager.HoverCancel(this, hoverTargets[i]);
+						interactionManager.HoverCancel(this, interactablesHovered[i]);
 					}
 				}
 
-				private XRHandPose GetPose(XRHandPoser handPoser, XRBaseInteractable interactable)
+				private XRHandPose GetPose(XRHandPoser handPoser, IXRInteractable interactable)
 				{
 					XRHandPose handPose = handPoser.GetPose(this, interactable);
 

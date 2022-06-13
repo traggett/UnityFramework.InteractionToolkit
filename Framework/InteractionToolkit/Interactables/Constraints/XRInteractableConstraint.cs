@@ -50,9 +50,7 @@ namespace Framework
 
 			private Matrix4x4 GetGizmoDrawMatrix()
 			{
-				Matrix4x4 matrix = this.transform.localToWorldMatrix;
-				matrix = new Matrix4x4(matrix.GetColumn(0).normalized, matrix.GetColumn(1).normalized, matrix.GetColumn(2).normalized, matrix.GetColumn(3).normalized);
-				return matrix;
+				return this.transform.localToWorldMatrix;
 			}
 			#endregion
 

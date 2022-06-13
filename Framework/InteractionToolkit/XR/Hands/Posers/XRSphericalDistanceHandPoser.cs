@@ -41,7 +41,7 @@ namespace Framework
 				#endregion
 
 				#region XRHandPoser
-				public override XRHandPose GetPose(IXRHandInteractor interactor, XRBaseInteractable interactable)
+				public override XRHandPose GetPose(IXRHandInteractor interactor, IXRInteractable interactable)
 				{
 					_pose._hasPosition = _constrainPosition;
 

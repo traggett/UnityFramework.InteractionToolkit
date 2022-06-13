@@ -94,7 +94,7 @@ namespace Framework
 			#region Private Functions
 			public void OnHoverEnter(HoverEnterEventArgs args)
 			{
-				if (args.interactor is XRBaseControllerInteractor controllerInteractor)
+				if (args.interactorObject is XRBaseControllerInteractor controllerInteractor)
 				{
 					_hoveredInteractors.Add(controllerInteractor);
 					OnUIHoverEnter();
@@ -103,7 +103,7 @@ namespace Framework
 
 			public void OnHoverExit(HoverExitEventArgs args)
 			{
-				if (args.interactor is XRBaseControllerInteractor controllerInteractor)
+				if (args.interactorObject is XRBaseControllerInteractor controllerInteractor)
 				{
 					_hoveredInteractors.Remove(controllerInteractor);
 					OnUIHoverExit();

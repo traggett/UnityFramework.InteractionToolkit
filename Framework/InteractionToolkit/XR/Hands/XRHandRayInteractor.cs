@@ -40,7 +40,7 @@ namespace Framework
 				[SerializeField]
 				private XRHandVisuals _handVisuals;
 				private XRHandPoser _currentSelectedPoser;
-				private XRBaseInteractable _currentSelectedPoserInteractable;
+				private IXRInteractable _currentSelectedPoserInteractable;
 				#endregion
 
 				#region XRRayInteractor
@@ -49,33 +49,33 @@ namespace Framework
 					base.Awake();
 
 					//FUCK UNITYS CODE
-					Destroy(originalAttachTransform.gameObject);
-					originalAttachTransform = null;
+					Destroy(rayOriginTransform.gameObject);
+					rayOriginTransform = null;
 				}
 
 				protected override void OnSelectEntering(SelectEnterEventArgs args)
 				{
 					//FUCK UNITYS CODE
-					originalAttachTransform = attachTransform;
+					rayOriginTransform = attachTransform;
 
 					base.OnSelectEntering(args);
 
 					//FUCK UNITYS CODE
-					originalAttachTransform = null;
+					rayOriginTransform = null;
 				}
 
 				protected override void OnSelectExiting(SelectExitEventArgs args)
 				{
 					//FUCK UNITYS CODE
-					originalAttachTransform = attachTransform;
+					rayOriginTransform = attachTransform;
 
 					base.OnSelectExiting(args);
 
 					//FUCK UNITYS CODE
-					originalAttachTransform = null;
+					rayOriginTransform = null;
 				}
 
-				public override bool CanSelect(XRBaseInteractable interactable)
+				public override bool CanSelect(IXRSelectInteractable interactable)
 				{
 					//Don't allow selecting on returning from an override pose.
 					//eg if a pose was too far way from the interacble and the interaction was cancelled, dont allow hovering objects whilst the pose is transitoned back to the interactor.
@@ -117,7 +117,7 @@ namespace Framework
 					}
 				}
 
-				public void ApplyHandPoseOnGrabbed(XRHandPoser poser, XRBaseInteractable interactable)
+				public void ApplyHandPoseOnGrabbed(XRHandPoser poser, IXRInteractable interactable)
 				{
 					_currentSelectedPoser = poser;
 					_currentSelectedPoserInteractable = interactable;
@@ -151,7 +151,7 @@ namespace Framework
 					}
 				}
 
-				public void ApplyHandPoseOnHovered(XRHandPoser poser, XRBaseInteractable interactable)
+				public void ApplyHandPoseOnHovered(XRHandPoser poser, IXRInteractable interactable)
 				{
 					//No posing on hover - hovering is down with ray
 				}
@@ -232,13 +232,13 @@ namespace Framework
 
 					_currentSelectedPoser = null;
 
-					if (selectTarget != null)
+					for (int i = 0; i < interactablesSelected.Count; i++)
 					{
-						interactionManager.SelectCancel(this, selectTarget);
+						interactionManager.SelectCancel(this, interactablesSelected[i]);
 					}
 				}
 
-				private XRHandPose GetPose(XRHandPoser handPoser, XRBaseInteractable interactable)
+				private XRHandPose GetPose(XRHandPoser handPoser, IXRInteractable interactable)
 				{
 					XRHandPose handPose = handPoser.GetPose(this, interactable);
 
