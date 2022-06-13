@@ -55,8 +55,6 @@ namespace Framework
 				protected SerializedProperty m_ThrowAngularVelocityScale;
 				/// <summary><see cref="SerializedProperty"/> of the <see cref="SerializeField"/> backing <see cref="XRGrabInteractable.forceGravityOnDetach"/>.</summary>
 				protected SerializedProperty m_ForceGravityOnDetach;
-				/// <summary><see cref="SerializedProperty"/> of the <see cref="SerializeField"/> backing <see cref="XRGrabInteractable.retainTransformParent"/>.</summary>
-				protected SerializedProperty m_RetainTransformParent;
 
 				/// <summary>Value to be checked before recalculate if the inspected object has a non-uniformly scaled parent.</summary>
 				bool m_RecalculateHasNonUniformScale = true;
@@ -108,8 +106,6 @@ namespace Framework
 					public static readonly GUIContent throwAngularVelocityScale = EditorGUIUtility.TrTextContent("Throw Angular Velocity Scale", "Scale factor applied to this object's inherited angular velocity of the Interactor when released.");
 					/// <summary><see cref="GUIContent"/> for <see cref="XRGrabInteractable.forceGravityOnDetach"/>.</summary>
 					public static readonly GUIContent forceGravityOnDetach = EditorGUIUtility.TrTextContent("Force Gravity On Detach", "Force this object to have gravity when released (will still use pre-grab value if this is false).");
-					/// <summary><see cref="GUIContent"/> for <see cref="XRGrabInteractable.retainTransformParent"/>.</summary>
-					public static readonly GUIContent retainTransformParent = EditorGUIUtility.TrTextContent("Retain Transform Parent", "Whether to set the parent of this object back to its original parent this object was a child of after this object is dropped.");
 					
 					/// <summary>Message for non-uniformly scaled parent.</summary>
 					public static readonly string nonUniformScaledParentWarning = "When a child object has a non-uniformly scaled parent and is rotated relative to that parent, it may appear skewed. To avoid this, use uniform scale in all parents' Transform of this object.";
@@ -147,7 +143,6 @@ namespace Framework
 					m_ThrowVelocityScale = serializedObject.FindProperty("m_ThrowVelocityScale");
 					m_ThrowAngularVelocityScale = serializedObject.FindProperty("m_ThrowAngularVelocityScale");
 					m_ForceGravityOnDetach = serializedObject.FindProperty("m_ForceGravityOnDetach");
-					m_RetainTransformParent = serializedObject.FindProperty("m_RetainTransformParent");
 					
 					Undo.postprocessModifications += OnPostprocessModifications;
 				}
@@ -180,7 +175,6 @@ namespace Framework
 				protected virtual void DrawGrabConfiguration()
 				{
 					EditorGUILayout.PropertyField(m_MovementType, Contents.movementType);
-					EditorGUILayout.PropertyField(m_RetainTransformParent, Contents.retainTransformParent);
 					DrawNonUniformScaleMessage();
 				}
 
@@ -269,9 +263,6 @@ namespace Framework
 				/// </summary>
 				protected virtual void DrawNonUniformScaleMessage()
 				{
-					if (m_RetainTransformParent == null || !m_RetainTransformParent.boolValue)
-						return;
-
 					if (m_RecalculateHasNonUniformScale)
 					{
 						var monoBehaviour = target as MonoBehaviour;

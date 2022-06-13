@@ -335,18 +335,6 @@ namespace Framework
 				set => m_ForceGravityOnDetach = value;
 			}
 
-			[SerializeField]
-			bool m_RetainTransformParent = true;
-
-			/// <summary>
-			/// Whether Unity sets the parent of this object back to its original parent this object was a child of after this object is dropped.
-			/// </summary>
-			public bool retainTransformParent
-			{
-				get => m_RetainTransformParent;
-				set => m_RetainTransformParent = value;
-			}
-
 			/// <summary>
 			/// Gets or sets the event that is called when the interactible is grabbed.
 			/// </summary>
@@ -759,10 +747,6 @@ namespace Framework
 			/// <seealso cref="Drop"/>
 			protected virtual void Grab()
 			{
-				var thisTransform = transform;
-				m_OriginalSceneParent = thisTransform.parent;
-				thisTransform.SetParent(null);
-
 				UpdateCurrentMovementType();
 				SetupRigidbodyGrab(m_Rigidbody);
 
@@ -771,8 +755,8 @@ namespace Framework
 				m_DetachAngularVelocity = Vector3.zero;
 
 				// Initialize target pose for easing and smoothing
-				m_TargetWorldPosition = thisTransform.position;
-				m_TargetWorldRotation = thisTransform.rotation;
+				m_TargetWorldPosition = this.transform.position;
+				m_TargetWorldRotation = this.transform.rotation;
 				m_CurrentAttachEaseTime = 0f;
 
 				var interactor = interactorsSelecting[0];
@@ -789,21 +773,6 @@ namespace Framework
 			/// <seealso cref="Grab"/>
 			protected virtual void Drop()
 			{
-				if (m_RetainTransformParent && m_OriginalSceneParent != null && !m_OriginalSceneParent.gameObject.activeInHierarchy)
-				{
-#if UNITY_EDITOR
-					// Suppress the warning when exiting Play mode to avoid confusing the user
-					var exitingPlayMode = UnityEditor.EditorApplication.isPlaying && !UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode;
-#else
-				var exitingPlayMode = false;
-#endif
-					if (!exitingPlayMode)
-						UnityEngine.Debug.LogWarning("Retain Transform Parent is set to true, and has a non-null Original Scene Parent. " +
-							"However, the old parent is deactivated so we are choosing not to re-parent upon dropping.", this);
-				}
-				else if (m_RetainTransformParent && gameObject.activeInHierarchy)
-					transform.SetParent(m_OriginalSceneParent);
-
 				SetupRigidbodyDrop(m_Rigidbody);
 
 				m_CurrentMovementType = m_MovementType;
