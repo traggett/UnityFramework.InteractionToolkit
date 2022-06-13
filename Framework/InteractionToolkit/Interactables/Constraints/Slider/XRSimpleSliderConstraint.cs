@@ -86,7 +86,7 @@ namespace Framework
 
 			public override void ConstrainTargetTransform(ref Vector3 position, ref Quaternion rotation)
 			{
-				Vector3 sliderspacePos = ToSliderSpacePos(position);
+				Vector3 sliderspacePos = WorldToConstraintSpacePos(position);
 				Vector3 localPos = this.transform.localPosition;
 
 				switch (_sliderAxis)
@@ -114,7 +114,7 @@ namespace Framework
 						break;
 				}
 
-				position = FromSliderSpacePos(sliderspacePos);
+				position = ConstraintToWorldSpacePos(sliderspacePos);
 				rotation = Quaternion.identity;
 			}
 
@@ -125,7 +125,7 @@ namespace Framework
 				if (!rigidbody.IsSleeping())
 				{
 					Vector3 localPos = this.transform.localPosition;
-					Vector3 localVelocity = ToSliderSpaceVector(rigidbody.velocity);
+					Vector3 localVelocity = WorldToConstraintSpaceVector(rigidbody.velocity);
 
 					switch (_sliderAxis)
 					{
@@ -187,7 +187,7 @@ namespace Framework
 
 					this.transform.localPosition = localPos;
 
-					rigidbody.velocity = FromSliderSpaceVector(localVelocity);
+					rigidbody.velocity = ConstraintToWorldSpaceVector(localVelocity);
 					rigidbody.angularVelocity = Vector3.zero;
 				}
 			}
@@ -270,7 +270,7 @@ namespace Framework
 						break;
 				}
 
-				Vector3 worldPos = FromSliderSpacePos(localSpacePos);
+				Vector3 worldPos = ConstraintToWorldSpacePos(localSpacePos);
 
 				var position = worldPos - rigidbody.worldCenterOfMass + rigidbody.position;
 				rigidbody.velocity = Vector3.zero;
@@ -312,38 +312,6 @@ namespace Framework
 				}
 
 				return sliderPos;
-			}
-
-			protected Vector3 ToSliderSpacePos(Vector3 worldspacePos)
-			{
-				if (this.transform.parent != null)
-					return this.transform.parent.InverseTransformPoint(worldspacePos);
-
-				return worldspacePos;
-			}
-
-			protected Vector3 FromSliderSpacePos(Vector3 sliderspacePos)
-			{
-				if (this.transform.parent != null)
-					return this.transform.parent.TransformPoint(sliderspacePos);
-
-				return sliderspacePos;
-			}
-
-			protected Vector3 ToSliderSpaceVector(Vector3 worldspaceVec)
-			{
-				if (this.transform.parent != null)
-					return this.transform.parent.InverseTransformVector(worldspaceVec);
-
-				return worldspaceVec;
-			}
-
-			protected Vector3 FromSliderSpaceVector(Vector3 sliderspaceVec)
-			{
-				if (this.transform.parent != null)
-					return this.transform.parent.TransformVector(sliderspaceVec);
-
-				return sliderspaceVec;
 			}
 			#endregion
 		}

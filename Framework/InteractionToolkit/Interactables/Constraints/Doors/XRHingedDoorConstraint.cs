@@ -20,7 +20,7 @@ namespace Framework
 				//Work out a rotation that is best for this position
 
 				//Get local position in 2d plane
-				Vector3 localPos = ToDoorSpacePosition(position);
+				Vector3 localPos = WorldToConstraintSpacePos(position);
 
 				//Work out an angel from it??
 				float angle = Vector2.SignedAngle(new Vector2(localPos.x, localPos.z), new Vector2(0f, 1f));
@@ -28,7 +28,7 @@ namespace Framework
 				
 				Quaternion localRotation = Quaternion.AngleAxis(angle, Vector3.up);
 
-				rotation = ToWorldSpace(localRotation);
+				rotation = ConstraintToWorldSpaceRotation(localRotation);
 
 				position = this.transform.position;
 			}
@@ -43,7 +43,7 @@ namespace Framework
 					rigidbody.velocity = Vector3.zero;
 
 					//Only allow angular velocity around pivot
-					Vector3 localAngularVel = ToDoorSpaceVector(rigidbody.angularVelocity);
+					Vector3 localAngularVel = WorldToConstraintSpaceVector(rigidbody.angularVelocity);
 					localAngularVel.x = 0f;
 					localAngularVel.z = 0f;
 
@@ -71,44 +71,12 @@ namespace Framework
 
 					this.transform.localRotation = Quaternion.Euler(0f, localAngle, 0f);
 
-					rigidbody.angularVelocity = FromDoorSpaceVector(localAngularVel);
+					rigidbody.angularVelocity = ConstraintToWorldSpaceVector(localAngularVel);
 				}
 			}
 			#endregion
 
 			#region Protected Functions
-			protected Vector3 ToDoorSpacePosition(Vector3 worldPos)
-			{
-				if (this.transform.parent != null)
-					return this.transform.parent.InverseTransformPoint(worldPos);
-
-				return worldPos;
-			}
-
-			protected Vector3 ToDoorSpaceVector(Vector3 worldVec)
-			{
-				if (this.transform.parent != null)
-					return this.transform.parent.InverseTransformVector(worldVec);
-
-				return worldVec;
-			}
-
-			protected Vector3 FromDoorSpaceVector(Vector3 doorSpaceVec)
-			{
-				if (this.transform.parent != null)
-					return this.transform.parent.TransformVector(doorSpaceVec);
-
-				return doorSpaceVec;
-			}
-
-			protected Quaternion ToWorldSpace(Quaternion doorSpaceRotation)
-			{
-				if (this.transform.parent != null)
-					return this.transform.parent.transform.rotation * doorSpaceRotation;
-
-				return doorSpaceRotation;
-			}
-
 			public override void DebugDraw(bool selected)
 			{
 				Debug.DebugDrawing.DrawWireArc(Vector3.zero, _minAngle, _maxAngle, 1f);

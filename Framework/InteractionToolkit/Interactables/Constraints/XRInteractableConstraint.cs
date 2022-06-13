@@ -50,6 +50,9 @@ namespace Framework
 
 			private Matrix4x4 GetGizmoDrawMatrix()
 			{
+				if (this.transform.parent != null)
+					return this.transform.parent.localToWorldMatrix;
+
 				return this.transform.localToWorldMatrix;
 			}
 			#endregion
@@ -77,6 +80,56 @@ namespace Framework
 			public virtual void DebugDraw(bool selected)
 			{
 
+			}
+			#endregion
+
+			#region Protected Functions
+			protected Vector3 WorldToConstraintSpacePos(Vector3 worldPos)
+			{
+				if (this.transform.parent != null)
+					return this.transform.parent.InverseTransformPoint(worldPos);
+
+				return worldPos;
+			}
+
+			protected Vector3 ConstraintToWorldSpacePos(Vector3 constraintSpacePos)
+			{
+				if (this.transform.parent != null)
+					return this.transform.parent.TransformPoint(constraintSpacePos);
+
+				return constraintSpacePos;
+			}
+
+			protected Vector3 WorldToConstraintSpaceVector(Vector3 worldVec)
+			{
+				if (this.transform.parent != null)
+					return this.transform.parent.InverseTransformVector(worldVec);
+
+				return worldVec;
+			}
+
+			protected Vector3 ConstraintToWorldSpaceVector(Vector3 constraintSpaceVector)
+			{
+				if (this.transform.parent != null)
+					return this.transform.parent.TransformVector(constraintSpaceVector);
+
+				return constraintSpaceVector;
+			}
+
+			protected Quaternion WorldToConstraintSpaceRotation(Quaternion worldRotation)
+			{
+				if (this.transform.parent != null)
+					return Quaternion.Inverse(this.transform.parent.transform.rotation) * worldRotation;
+
+				return worldRotation;
+			}
+
+			protected Quaternion ConstraintToWorldSpaceRotation(Quaternion constraintSpaceRotation)
+			{
+				if (this.transform.parent != null)
+					return this.transform.parent.transform.rotation * constraintSpaceRotation;
+
+				return constraintSpaceRotation;
 			}
 			#endregion
 		}

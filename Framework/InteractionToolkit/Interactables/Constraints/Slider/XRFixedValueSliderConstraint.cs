@@ -122,7 +122,7 @@ namespace Framework
 
 			public override void ConstrainTargetTransform(ref Vector3 position, ref Quaternion rotation)
 			{
-				Vector3 sliderspacePos = ToSliderSpacePos(position);
+				Vector3 sliderspacePos = WorldToConstraintSpacePos(position);
 				Vector3 localPos = this.transform.localPosition;
 
 				switch (_sliderAxis)
@@ -150,7 +150,7 @@ namespace Framework
 						break;
 				}
 
-				position = FromSliderSpacePos(sliderspacePos);
+				position = ConstraintToWorldSpacePos(sliderspacePos);
 				rotation = Quaternion.identity;
 			}
 			
