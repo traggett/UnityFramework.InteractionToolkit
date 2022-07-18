@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.UI;
 
 namespace Framework
 {
@@ -15,8 +16,9 @@ namespace Framework
 		public class XRInteractableUIEvents : MonoBehaviour
 		{
 			#region Private Data
+			private XRUIInputModule _inputModule;
 			private List<XRBaseControllerInteractor> _hoveredInteractors = new List<XRBaseControllerInteractor>();
-			private List<XRBaseController> _presssControllers = new List<XRBaseController>();
+			private List<XRBaseControllerInteractor> _presssControllers = new List<XRBaseControllerInteractor>();
 			#endregion
 
 			#region Unity Messages
@@ -44,6 +46,8 @@ namespace Framework
 
 			private void OnEnable()
 			{
+				FindInputModule();
+
 				_hoveredInteractors.Clear();
 				_presssControllers.Clear();
 			}
@@ -52,13 +56,13 @@ namespace Framework
 			{
 				if (_hoveredInteractors.Count > 0)
 				{
-					OnUIHoverExit();
+					TrigggerHoverExit(null);
 					_hoveredInteractors.Clear();
 				}
 
 				if (_presssControllers.Count > 0)
 				{
-					OnUIPointerUp();
+					TriggerPointerUp(null);
 					_presssControllers.Clear();
 				}
 			}
@@ -70,18 +74,19 @@ namespace Framework
 				{
 					if (interactor.xrController.uiPressInteractionState.activatedThisFrame)
 					{
-						_presssControllers.Add(interactor.xrController);
-						OnUIPointerDown();
+						_presssControllers.Add(interactor);
+						TriggerPointerDown(interactor);
 					}
 				}
 
 				//Check for UI press up on any pressed controller
 				for (int i = 0; i < _presssControllers.Count;)
 				{
-					if (!_presssControllers[i].uiPressInteractionState.active)
+					if (!_presssControllers[i].xrController.uiPressInteractionState.active)
 					{
+						XRBaseControllerInteractor interactor = _presssControllers[i];
 						_presssControllers.RemoveAt(i);
-						OnUIPointerUp();
+						TriggerPointerUp(interactor);
 					}
 					else
 					{
@@ -97,7 +102,7 @@ namespace Framework
 				if (args.interactorObject is XRBaseControllerInteractor controllerInteractor)
 				{
 					_hoveredInteractors.Add(controllerInteractor);
-					OnUIHoverEnter();
+					TriggerHoverEnter(controllerInteractor);
 				}
 			}
 
@@ -106,57 +111,75 @@ namespace Framework
 				if (args.interactorObject is XRBaseControllerInteractor controllerInteractor)
 				{
 					_hoveredInteractors.Remove(controllerInteractor);
-					OnUIHoverExit();
+					TrigggerHoverExit(controllerInteractor);
 				}
 			}
-			
-			private void OnUIHoverEnter()
+
+			private void TriggerHoverEnter(XRBaseControllerInteractor controllerInteractor)
 			{
-				PointerEventData eventData = new PointerEventData(EventSystem.current)
-				{
-
-				};
-
+				PointerEventData eventData = CreateEvent(controllerInteractor);
+				eventData.pointerEnter = this.gameObject;
+				
 				ExecuteEvents.Execute(this.gameObject, eventData, ExecuteEvents.pointerEnterHandler);
 			}
 
-			private void OnUIHoverExit()
+			private void TrigggerHoverExit(XRBaseControllerInteractor controllerInteractor)
 			{
-				PointerEventData eventData = new PointerEventData(EventSystem.current)
-				{
-
-				};
-
+				PointerEventData eventData = CreateEvent(controllerInteractor);
 				ExecuteEvents.Execute(this.gameObject, eventData, ExecuteEvents.pointerExitHandler);
 			}
 
-			private void OnUIPointerDown()
+			private void TriggerPointerDown(XRBaseControllerInteractor controllerInteractor)
 			{
-				PointerEventData eventData = new PointerEventData(EventSystem.current)
-				{
-					button = PointerEventData.InputButton.Left
-				};
+				PointerEventData eventData = CreateEvent(controllerInteractor);
+				eventData.button = PointerEventData.InputButton.Left;
+				eventData.pointerPress = this.gameObject;
 
 				ExecuteEvents.Execute(this.gameObject, eventData, ExecuteEvents.pointerDownHandler);
 			}
 
-			private void OnUIPointerUp()
+			private void TriggerPointerUp(XRBaseControllerInteractor controllerInteractor)
 			{
-				PointerEventData eventData = new PointerEventData(EventSystem.current)
-				{
-					button = PointerEventData.InputButton.Left
-				};
+				PointerEventData eventData = CreateEvent(controllerInteractor);
+				eventData.button = PointerEventData.InputButton.Left;
 
 				ExecuteEvents.Execute(this.gameObject, eventData, ExecuteEvents.pointerUpHandler);
 
 				if (_hoveredInteractors.Count > 0)
 				{
-					eventData = new PointerEventData(EventSystem.current)
-					{
-						button = PointerEventData.InputButton.Left
-					};
+					eventData = CreateEvent(controllerInteractor);
+					eventData.button = PointerEventData.InputButton.Left;
 
 					ExecuteEvents.Execute(this.gameObject, eventData, ExecuteEvents.pointerClickHandler);
+				}
+			}
+
+			private PointerEventData CreateEvent(XRBaseControllerInteractor controllerInteractor)
+			{
+				PointerEventData eventData = new PointerEventData(EventSystem.current);
+
+				if (controllerInteractor is IUIInteractor uiInteractor)
+				{
+					if (_inputModule != null)
+					{
+						if (_inputModule.GetTrackedDeviceModel(uiInteractor, out TrackedDeviceModel model))
+						{
+							eventData.pointerId = model.pointerId;
+							eventData.position = model.position;
+							eventData.scrollDelta = model.scrollDelta;
+							eventData.pointerCurrentRaycast = model.currentRaycast;
+						}
+					}
+				}
+
+				return eventData;
+			}
+
+			private void FindInputModule()
+			{	
+				if (_inputModule != null)
+				{
+					_inputModule = EventSystem.current.GetComponent<XRUIInputModule>();
 				}
 			}
 			#endregion
