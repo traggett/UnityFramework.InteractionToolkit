@@ -177,7 +177,7 @@ namespace Framework
 
 			private void FindInputModule()
 			{	
-				if (_inputModule != null)
+				if (_inputModule == null)
 				{
 					_inputModule = EventSystem.current.GetComponent<XRUIInputModule>();
 				}
