@@ -145,7 +145,7 @@ namespace Framework
 
 				ExecuteEvents.Execute(this.gameObject, eventData, ExecuteEvents.pointerUpHandler);
 
-				if (_hoveredInteractors.Count > 0)
+				if (_hoveredInteractors.Count > 0 && controllerInteractor != null)
 				{
 					eventData = CreateEvent(controllerInteractor);
 					eventData.button = PointerEventData.InputButton.Left;
