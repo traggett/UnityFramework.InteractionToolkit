@@ -88,33 +88,7 @@ namespace Framework
 						break;
 					case XRInteractionUpdateOrder.UpdatePhase.Late:
 						{
-							float normalisedPosition = NormalisedPosition;
-
-							if (!Mathf.Approximately(normalisedPosition, _previousNormalisedPosition))
-							{
-								_previousNormalisedPosition = normalisedPosition;
-
-								SliderChangeEventArgs eventArgs = new SliderChangeEventArgs()
-								{
-									Value = normalisedPosition
-								};
-
-								_sliderMovedEvent?.Invoke(eventArgs);
-							}
-
-							int sliderIndex = SliderIndex;
-
-							if (sliderIndex != _previousSliderIndex)
-							{
-								_previousSliderIndex = sliderIndex;
-
-								FixedValueSliderChangeEventArgs eventArgs = new FixedValueSliderChangeEventArgs()
-								{
-									Index = sliderIndex
-								};
-
-								_fixedValueSliderChanged?.Invoke(eventArgs);
-							}
+							CheckForSliderChange();
 						}
 						break;
 				}
@@ -185,6 +159,25 @@ namespace Framework
 					Vector3 pos = sliderAxis * _sliderSize * _allowedSliderPositions[i];
 
 					Gizmos.DrawLine(pos - notchAxis * notchSize, pos + notchAxis * notchSize);
+				}
+			}
+
+			protected override void CheckForSliderChange()
+			{
+				base.CheckForSliderChange();
+
+				int sliderIndex = SliderIndex;
+
+				if (sliderIndex != _previousSliderIndex)
+				{
+					_previousSliderIndex = sliderIndex;
+
+					FixedValueSliderChangeEventArgs eventArgs = new FixedValueSliderChangeEventArgs()
+					{
+						Index = sliderIndex
+					};
+
+					_fixedValueSliderChanged?.Invoke(eventArgs);
 				}
 			}
 			#endregion

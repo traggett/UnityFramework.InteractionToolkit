@@ -41,8 +41,6 @@ namespace Framework
 			public float _sliderSize = 1f;
 			public SliderChangeEvent _sliderMovedEvent = new SliderChangeEvent();
 
-			protected float _previousNormalisedPosition = -1f;
-
 			public float NormalisedPosition
 			{
 				get
@@ -57,6 +55,10 @@ namespace Framework
 			}
 			#endregion
 
+			#region Protected Data
+			protected float _previousNormalisedPosition = -1f;
+			#endregion
+
 			#region XRInteractableConstraint
 			public override void ProcessConstraint(XRInteractionUpdateOrder.UpdatePhase updatePhase)
 			{
@@ -66,19 +68,7 @@ namespace Framework
 				{
 					case XRInteractionUpdateOrder.UpdatePhase.Late:
 						{
-							float normalisedPosition = NormalisedPosition;
-
-							if (!Mathf.Approximately(normalisedPosition, _previousNormalisedPosition))
-							{
-								_previousNormalisedPosition = normalisedPosition;
-
-								SliderChangeEventArgs eventArgs = new SliderChangeEventArgs()
-								{
-									Value = normalisedPosition
-								};
-
-								_sliderMovedEvent?.Invoke(eventArgs);
-							}
+							CheckForSliderChange();
 						}
 						break;
 				}
@@ -240,31 +230,29 @@ namespace Framework
 				}
 
 				this.transform.localPosition = localSpacePos;
+
+				CheckForSliderChange();
 			}
 
 			protected virtual void SetSliderSpacePosKinematic(Rigidbody rigidbody, float sliderspacePos)
 			{
 				Vector3 localSpacePos = this.transform.localPosition;
-				float previousSliderValue;
-
+				
 				switch (_sliderAxis)
 				{
 					case SlideAxis.X:
 						{
-							previousSliderValue = localSpacePos.x;
 							localSpacePos.x = sliderspacePos;
 						}
 						break;
 					case SlideAxis.Y:
 						{
-							previousSliderValue = localSpacePos.y;
 							localSpacePos.y = sliderspacePos;
 						}
 						break;
 					case SlideAxis.Z:
 					default:
 						{
-							previousSliderValue = localSpacePos.z;
 							localSpacePos.z = sliderspacePos;
 						}
 						break;
@@ -276,15 +264,7 @@ namespace Framework
 				rigidbody.velocity = Vector3.zero;
 				rigidbody.MovePosition(position);
 
-				if (!Mathf.Approximately(previousSliderValue, sliderspacePos))
-				{
-					SliderChangeEventArgs eventArgs = new SliderChangeEventArgs()
-					{
-						Value = Mathf.Clamp01(sliderspacePos / _sliderSize)
-					};
-
-					_sliderMovedEvent.Invoke(eventArgs);
-				}
+				CheckForSliderChange();
 			}
 
 			protected float GetSliderSpacePos()
@@ -312,6 +292,23 @@ namespace Framework
 				}
 
 				return sliderPos;
+			}
+
+			protected virtual void CheckForSliderChange()
+			{
+				float normalisedPosition = NormalisedPosition;
+
+				if (!Mathf.Approximately(normalisedPosition, _previousNormalisedPosition))
+				{
+					_previousNormalisedPosition = normalisedPosition;
+
+					SliderChangeEventArgs eventArgs = new SliderChangeEventArgs()
+					{
+						Value = normalisedPosition
+					};
+
+					_sliderMovedEvent?.Invoke(eventArgs);
+				}
 			}
 			#endregion
 		}
