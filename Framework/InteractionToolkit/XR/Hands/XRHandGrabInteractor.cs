@@ -124,8 +124,11 @@ namespace Framework
 							grabInteractable.InteractorLocalAttachRotation = Quaternion.Inverse(Quaternion.Inverse(grabInteractable.transform.rotation) * pose.WorldRotation);
 						}
 
-						//Find position offset of pose in interactable's own space
-						grabInteractable.InteractorLocalAttachPosition = -grabInteractable.transform.InverseTransformPoint(pose.WorldPosition);
+						if (pose.HasPosition)
+						{
+							//Find position offset of pose in interactable's own space
+							grabInteractable.InteractorLocalAttachPosition = -grabInteractable.transform.InverseTransformPoint(pose.WorldPosition);
+						}
 					}
 				}
 
@@ -201,11 +204,14 @@ namespace Framework
 				private bool IsPoseOk(XRHandPose handPose, float maxDist, float maxAngle)
 				{
 					//Check distance
-					float distance = Vector3.Distance(handPose.WorldPosition, this.attachTransform.position);
-
-					if (distance > maxDist)
+					if (handPose.HasPosition)
 					{
-						return false;
+						float distance = Vector3.Distance(handPose.WorldPosition, this.attachTransform.position);
+
+						if (distance > maxDist)
+						{
+							return false;
+						}
 					}
 
 					//Check rotation

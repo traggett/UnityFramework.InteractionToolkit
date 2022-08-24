@@ -217,7 +217,7 @@ namespace Framework
 						}
 
 						//Apply position
-						if (_allowOverrideMovement)
+						if (_allowOverrideMovement && _overridePose.HasPosition)
 						{
 							Vector3 targetPosition = GetVisualsWorldPosition(_overridePose);
 

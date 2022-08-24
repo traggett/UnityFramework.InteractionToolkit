@@ -39,6 +39,14 @@ namespace Framework
 					}
 				}
 
+				public bool HasPosition
+				{
+					get
+					{
+						return _hasPosition;
+					}
+				}
+
 				public bool HasRotation
 				{
 					get
@@ -78,6 +86,9 @@ namespace Framework
 
 				[SerializeField]
 				private HandPoseFlags _poseFlags;
+
+				[SerializeField]
+				private bool _hasPosition;
 
 				[SerializeField]
 				private bool _hasRotation;

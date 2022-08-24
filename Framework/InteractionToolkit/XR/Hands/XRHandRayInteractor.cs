@@ -130,8 +130,11 @@ namespace Framework
 							grabInteractable.InteractorLocalAttachRotation = Quaternion.Inverse(Quaternion.Inverse(grabInteractable.transform.rotation) * pose.WorldRotation);
 						}
 
-						//Find position offset of pose in interactable's own space
-						grabInteractable.InteractorLocalAttachPosition = -grabInteractable.transform.InverseTransformPoint(pose.WorldPosition);
+						if (pose.HasPosition)
+						{
+							//Find position offset of pose in interactable's own space
+							grabInteractable.InteractorLocalAttachPosition = -grabInteractable.transform.InverseTransformPoint(pose.WorldPosition);
+						}
 					}
 				}
 
