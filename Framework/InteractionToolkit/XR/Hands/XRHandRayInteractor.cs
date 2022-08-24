@@ -167,10 +167,11 @@ namespace Framework
 						//If selected interactable with a hand poser...
 						if (_currentSelectedPose != null)
 						{
-							if (IsPosePositionOk(_currentSelectedPose, _maxSelectedOverridePoseDistance)
-								&& IsPoseRotationOk(_currentSelectedPose, _maxSelectedOverridePoseRotation))
+							bool easingIn = IsEasingInToAttachment(_currentSelectedPoseInteractable);
+
+							if (easingIn || IsPoseOk(_currentSelectedPose, _maxSelectedOverridePoseDistance, _maxSelectedOverridePoseRotation))
 							{
-								_handVisuals.ApplyOverridePose(_currentSelectedPose, CheckShouldAllowPoseMovement(_currentSelectedPoseInteractable));
+								_handVisuals.ApplyOverridePose(_currentSelectedPose, !easingIn);
 							}
 							else
 							{
@@ -183,7 +184,7 @@ namespace Framework
 				/// <summary>
 				/// Checks whether a target hand pose goes beyond the allowed distance limits from the interactors actual current position.
 				/// </summary>
-				private bool IsPosePositionOk(XRHandPose handPose, float maxDist)
+				private bool IsPoseOk(XRHandPose handPose, float maxDist, float maxAngle)
 				{
 					//Check distance
 					float distance = Vector3.Distance(handPose.WorldPosition, this.attachTransform.position);
@@ -193,14 +194,6 @@ namespace Framework
 						return false;
 					}
 
-					return true;
-				}
-
-				/// <summary>
-				/// Checks whether a target hand pose goes beyond the allowed rotation limits from the interactors actual current rotation.
-				/// </summary>
-				private bool IsPoseRotationOk(XRHandPose handPose, float maxAngle)
-				{
 					//Check rotation
 					if (handPose.HasRotation)
 					{
@@ -227,15 +220,15 @@ namespace Framework
 					}
 				}
 
-				private bool CheckShouldAllowPoseMovement(IXRInteractable interactable)
+				private bool IsEasingInToAttachment(IXRInteractable interactable)
 				{
 					//If interactible is easing in (lerping to position) then ignore position and rotation until its there
 					if (interactable is XRAdvancedGrabInteractable grabInteractable && grabInteractable.IsEasingIn())
 					{
-						return false;
+						return true;
 					}
 
-					return true;
+					return false;
 				}
 				#endregion
 			}
