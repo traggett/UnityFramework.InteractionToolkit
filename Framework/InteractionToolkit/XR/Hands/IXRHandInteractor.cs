@@ -40,7 +40,7 @@ namespace Framework
 				/// <summary>
 				/// Applys a hand pose from an XRHandPoser when an interactable is grabbed.
 				/// </summary>
-				void ApplyHandPoseOnGrabbed(XRHandPoser poser, IXRInteractable interactable);
+				void ApplyHandPoseOnGrabbed(XRHandPose pose, IXRInteractable interactable);
 
 				/// <summary>
 				/// Clears a hand pose for an interactable when it's dropped.
@@ -50,7 +50,7 @@ namespace Framework
 				/// <summary>
 				/// Applys a hand pose from an XRHandPoser when an interactable is hovered.
 				/// </summary>
-				public void ApplyHandPoseOnHovered(XRHandPoser poser, IXRInteractable interactable);
+				public void ApplyHandPoseOnHovered(XRHandPose pose, IXRInteractable interactable);
 
 				/// <summary>
 				/// Clears a hand pose for an interactable when it's un-hovered.

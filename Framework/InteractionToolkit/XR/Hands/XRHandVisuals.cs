@@ -26,7 +26,7 @@ namespace Framework
 				}
 
 				#region Virtual Interface
-				public abstract void ApplyOverridePose(XRHandPose handPose);
+				public abstract void ApplyOverridePose(XRHandPose handPose, bool allowMovement);
 
 				public abstract void ClearOverridePose();
 
@@ -40,14 +40,14 @@ namespace Framework
 				{
 					//The pose rotation is where the attach transform should be so need to take out the offset of this attach transform to get a target for the visuals
 					Quaternion attachRotationOffset = Quaternion.Inverse(this.transform.rotation) * _attachTransform.rotation;
-					return pose._worldRotation * Quaternion.Inverse(attachRotationOffset);
+					return pose.WorldRotation * Quaternion.Inverse(attachRotationOffset);
 				}
 
 				protected Vector3 GetVisualsWorldPosition(XRHandPose pose)
 				{
 					//The pose position is where the attach transform should be so need to take out the offset of this attach transform to get a target for the visuals
 					Vector3 attachPositionOffset = _attachTransform.position - this.transform.position;
-					return pose._worldPosition - attachPositionOffset;
+					return pose.WorldPosition - attachPositionOffset;
 				}
 				#endregion
 			}

@@ -90,9 +90,10 @@ namespace Framework
 				private AnimatorOverrideController _animatorOverrideController;
 				private List<KeyValuePair<AnimationClip, AnimationClip>> _animatorClipOverrides;
 
-				bool _hasOverridePose;
 				private XRHandPose _overridePose;
 				private float _overridePoseLerp;
+
+				private bool _allowOverrideMovement;
 
 				private float _pointBlend;
 				private float _thumbsUpBlend;
@@ -134,27 +135,26 @@ namespace Framework
 					}
 				}
 
-				public override void ApplyOverridePose(XRHandPose handPose)
+				public override void ApplyOverridePose(XRHandPose handPose, bool allowMovement)
 				{
-					_hasOverridePose = true;
 					_overridePose = handPose;
 					_overridePoseLerp = 0f;
+					_allowOverrideMovement = allowMovement;
 				}
 
 				public override void ClearOverridePose()
 				{
-					_hasOverridePose = false;
-					_overridePose = default;
+					_overridePose = null;
 				}
 
 				public override bool IsEnteringOverridePose()
 				{
-					return _hasOverridePose && _overridePoseLerp < 1f;
+					return _overridePose != null && _overridePoseLerp < 1f;
 				}
 
 				public override bool IsReturningFromOverridePose()
 				{
-					return _hasOverridePose && _overridePoseLerp > 0f;
+					return _overridePose != null && _overridePoseLerp > 0f;
 				}
 				#endregion
 
@@ -179,10 +179,10 @@ namespace Framework
 				private void ApplyOverridePose()
 				{
 					//Transiton to / from override pose
-					if (_hasOverridePose)
+					if (_overridePose != null)
 					{
 						//Set the override pose animation (if any)
-						SetCurrentOverridePoseAnimation(_overridePose._animation);
+						SetCurrentOverridePoseAnimation(_overridePose.PoseAnimation);
 
 						//Update pose lerp
 						if (_overridePoseLerp < 1f)
@@ -191,7 +191,7 @@ namespace Framework
 						}
 
 						//Apply rotation
-						if (_overridePose._hasRotation)
+						if (_allowOverrideMovement && _overridePose.HasRotation)
 						{
 							Quaternion targetRotation = GetVisualsWorldRotation(_overridePose);
 
@@ -217,7 +217,7 @@ namespace Framework
 						}
 
 						//Apply position
-						if (_overridePose._hasPosition)
+						if (_allowOverrideMovement)
 						{
 							Vector3 targetPosition = GetVisualsWorldPosition(_overridePose);
 

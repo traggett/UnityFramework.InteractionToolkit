@@ -53,10 +53,10 @@ namespace Framework
 				#region Private Data
 				[SerializeField]
 				private XRHandVisuals _handVisuals;
-				private XRHandPoser _currentSelectedPoser;
-				private IXRInteractable _currentSelectedPoserInteractable;
-				private XRHandPoser _currentHoveredPoser;
-				private IXRInteractable _currentHoveredPoserInteractable;
+				private XRHandPose _currentSelectedPose;
+				private IXRInteractable _currentSelectedPoseInteractable;
+				private XRHandPose _currentHoveredPose;
+				private IXRInteractable _currentHoveredPoseInteractable;
 				#endregion
 
 				#region XRDirectInteractor
@@ -110,53 +110,48 @@ namespace Framework
 					}
 				}
 
-				public void ApplyHandPoseOnGrabbed(XRHandPoser poser, IXRInteractable interactable)
+				public void ApplyHandPoseOnGrabbed(XRHandPose pose, IXRInteractable interactable)
 				{
-					_currentSelectedPoser = poser;
-					_currentSelectedPoserInteractable = interactable;
+					_currentSelectedPose = pose;
+					_currentSelectedPoseInteractable = interactable;
 
 					//If interactable is a GrabInteractable then calculated the attach offsets to place the hand at the correct pose on grab
 					if (interactable is XRAdvancedGrabInteractable grabInteractable)
 					{
-						XRHandPose pose = poser.GeneratePose(this, interactable);
-
-						if (pose._hasRotation)
+						if (pose.HasRotation)
 						{
 							//Find rotation offset of pose in interactable's own space
-							grabInteractable.InteractorLocalAttachRotation = Quaternion.Inverse(Quaternion.Inverse(grabInteractable.transform.rotation) * pose._worldRotation);
+							grabInteractable.InteractorLocalAttachRotation = Quaternion.Inverse(Quaternion.Inverse(grabInteractable.transform.rotation) * pose.WorldRotation);
 						}
 
-						if (pose._hasPosition)
-						{
-							//Find position offset of pose in interactable's own space
-							grabInteractable.InteractorLocalAttachPosition = -grabInteractable.transform.InverseTransformPoint(pose._worldPosition);
-						}
+						//Find position offset of pose in interactable's own space
+						grabInteractable.InteractorLocalAttachPosition = -grabInteractable.transform.InverseTransformPoint(pose.WorldPosition);
 					}
 				}
 
 				public void ClearHandPoseOnDropped(IXRInteractable interactable)
 				{
-					if (_currentSelectedPoserInteractable == interactable)
+					if (_currentSelectedPoseInteractable == interactable)
 					{
 						_handVisuals.ClearOverridePose();
-						_currentSelectedPoser = null;
-						_currentSelectedPoserInteractable = null;
+						_currentSelectedPose = null;
+						_currentSelectedPoseInteractable = null;
 					}
 				}
 
-				public void ApplyHandPoseOnHovered(XRHandPoser poser, IXRInteractable interactable)
+				public void ApplyHandPoseOnHovered(XRHandPose pose, IXRInteractable interactable)
 				{
-					_currentHoveredPoser = poser;
-					_currentHoveredPoserInteractable = interactable;
+					_currentHoveredPose = pose;
+					_currentHoveredPoseInteractable = interactable;
 				}
 
 				public void ClearHandPoseOnHovered(IXRInteractable interactable)
 				{
-					if (_currentHoveredPoserInteractable == interactable)
+					if (_currentHoveredPoseInteractable == interactable)
 					{
 						_handVisuals.ClearOverridePose();
-						_currentHoveredPoser = null;
-						_currentHoveredPoserInteractable = null;
+						_currentHoveredPose = null;
+						_currentHoveredPoseInteractable = null;
 					}
 				}
 				#endregion
@@ -170,14 +165,12 @@ namespace Framework
 					if (_handVisuals != null)
 					{
 						//If selected interactable with a hand poser...
-						if (_currentSelectedPoser != null)
+						if (_currentSelectedPose != null)
 						{
-							XRHandPose handPose = GetPose(_currentSelectedPoser, _currentSelectedPoserInteractable);
-
-							if (IsPosePositionOk(handPose, _maxSelectedOverridePoseDistance)
-								&& IsPoseRotationOk(handPose, _maxSelectedOverridePoseRotation))
+							if (IsPosePositionOk(_currentSelectedPose, _maxSelectedOverridePoseDistance)
+								&& IsPoseRotationOk(_currentSelectedPose, _maxSelectedOverridePoseRotation))
 							{
-								_handVisuals.ApplyOverridePose(handPose);
+								_handVisuals.ApplyOverridePose(_currentSelectedPose, CheckShouldAllowPoseMovement(_currentSelectedPoseInteractable));
 							}
 							else
 							{
@@ -185,14 +178,12 @@ namespace Framework
 							}
 						}
 						//If hovered over interactable with a hand poser...
-						else if (_currentHoveredPoser != null)
+						else if (_currentHoveredPose != null)
 						{
-							XRHandPose handPose = GetPose(_currentHoveredPoser, _currentHoveredPoserInteractable);
-
-							if (IsPosePositionOk(handPose, _maxHoveredOverridePoseDistance) 
-								&& IsPoseRotationOk(handPose, _maxHoveredOverridePoseRotation))
+							if (IsPosePositionOk(_currentHoveredPose, _maxHoveredOverridePoseDistance) 
+								&& IsPoseRotationOk(_currentHoveredPose, _maxHoveredOverridePoseRotation))
 							{
-								_handVisuals.ApplyOverridePose(handPose);
+								_handVisuals.ApplyOverridePose(_currentHoveredPose, CheckShouldAllowPoseMovement(_currentSelectedPoseInteractable));
 							}
 							else
 							{
@@ -208,14 +199,11 @@ namespace Framework
 				private bool IsPosePositionOk(XRHandPose handPose, float maxDist)
 				{
 					//Check distance
-					if (handPose._hasPosition)
-					{
-						float distance = Vector3.Distance(handPose._worldPosition, this.attachTransform.position);
+					float distance = Vector3.Distance(handPose.WorldPosition, this.attachTransform.position);
 
-						if (distance > maxDist)
-						{
-							return false;
-						}
+					if (distance > maxDist)
+					{
+						return false;
 					}
 
 					return true;
@@ -227,9 +215,9 @@ namespace Framework
 				private bool IsPoseRotationOk(XRHandPose handPose, float maxAngle)
 				{
 					//Check rotation
-					if (handPose._hasRotation)
+					if (handPose.HasRotation)
 					{
-						float angle = Quaternion.Angle(handPose._worldRotation, this.attachTransform.rotation);
+						float angle = Quaternion.Angle(handPose.WorldRotation, this.attachTransform.rotation);
 
 						if (angle > maxAngle)
 						{
@@ -244,7 +232,7 @@ namespace Framework
 				{
 					_handVisuals.ClearOverridePose();
 
-					_currentSelectedPoser = null;
+					_currentSelectedPose = null;
 
 					for (int i = 0; i < interactablesSelected.Count; i++)
 					{
@@ -256,7 +244,7 @@ namespace Framework
 				{
 					_handVisuals.ClearOverridePose();
 
-					_currentHoveredPoser = null;
+					_currentHoveredPose = null;
 
 					for (int i = 0; i < interactablesHovered.Count; i++)
 					{
@@ -264,18 +252,15 @@ namespace Framework
 					}
 				}
 
-				private XRHandPose GetPose(XRHandPoser handPoser, IXRInteractable interactable)
+				private bool CheckShouldAllowPoseMovement(IXRInteractable interactable)
 				{
-					XRHandPose handPose = handPoser.GeneratePose(this, interactable);
-
 					//If interactible is easing in (lerping to position) then ignore position and rotation until its there
 					if (interactable is XRAdvancedGrabInteractable grabInteractable && grabInteractable.IsEasingIn())
 					{
-						handPose._hasPosition = false;
-						handPose._hasRotation = false;
+						return false;
 					}
 
-					return handPose;
+					return true;
 				}
 				#endregion
 			}

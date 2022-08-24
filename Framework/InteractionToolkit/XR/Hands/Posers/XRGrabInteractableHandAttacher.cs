@@ -17,7 +17,7 @@ namespace Framework
 				#region Protected Data
 				protected XRAdvancedGrabInteractable _interactable;
 				[SerializeField]
-				protected XRHandPoser[] _posers;
+				protected XRHandPose[] _poses;
 				#endregion
 
 				#region Unity Messages
@@ -50,7 +50,7 @@ namespace Framework
 				{
 					if (args.interactorObject is IXRHandInteractor handInteractor)
 					{
-						XRHandPoser handPoser = FindBestPoser(handInteractor, HandPoseFlags.Grab);
+						XRHandPose handPoser = FindBestPoser(handInteractor, HandPoseFlags.Grab);
 
 						if (handPoser != null)
 						{
@@ -64,12 +64,7 @@ namespace Framework
 				{
 					if (args.interactorObject is IXRHandInteractor handInteractor)
 					{
-						XRHandPoser handPoser = FindBestPoser(handInteractor, HandPoseFlags.Grab);
-
-						if (handPoser != null)
-						{
-							handInteractor.ClearHandPoseOnDropped(_interactable);
-						}
+						handInteractor.ClearHandPoseOnDropped(_interactable);
 					}
 				}
 
@@ -77,7 +72,7 @@ namespace Framework
 				{
 					if (args.interactorObject is IXRHandInteractor handInteractor)
 					{
-						XRHandPoser handPoser = FindBestPoser(handInteractor, HandPoseFlags.Hover);
+						XRHandPose handPoser = FindBestPoser(handInteractor, HandPoseFlags.Hover);
 
 						if (handPoser != null)
 						{
@@ -90,54 +85,41 @@ namespace Framework
 				{
 					if (args.interactorObject is IXRHandInteractor handInteractor)
 					{
-						XRHandPoser handPoser = FindBestPoser(handInteractor, HandPoseFlags.Hover);
-
-						if (handPoser != null)
-						{
-							handInteractor.ClearHandPoseOnHovered(_interactable);
-						}
+						handInteractor.ClearHandPoseOnHovered(_interactable);
 					}
 				}
 				#endregion
 
 				#region Virtual Interface
-				protected virtual XRHandPoser FindBestPoser(IXRHandInteractor interactor, HandPoseFlags flags)
+				protected virtual XRHandPose FindBestPoser(IXRHandInteractor interactor, HandPoseFlags flags)
 				{
-					XRHandPoser bestPoser = null;
+					XRHandPose bestPoser = null;
 					float closestPoseDistSqr = float.MaxValue;
 
 					Transform interactorTransform = interactor.Interactor.transform;
 					Vector3 interactorPosition = interactorTransform.position;
 					Quaternion interactorRotation = interactorTransform.rotation;
 
-					for (int i=0; i<_posers.Length; i++)
+					for (int i=0; i<_poses.Length; i++)
 					{
+						XRHandPose handPose = _poses[i];
+
 						//First check pose is compatible with interactor hand type (left/right/both etc)
-						if ((_posers[i].PoseFlags & flags) == flags && 
-							(_posers[i].CompatibleHands & interactor.HandFlags) == interactor.HandFlags)
+						if ((handPose.PoseFlags & flags) == flags && 
+							(handPose.CompatibleHands & interactor.HandFlags) == interactor.HandFlags)
 						{
 							//Then rate according to distance and angle?
-							XRHandPose pose = _posers[i].GeneratePose(interactor, _interactable);
+							handPose.GeneratePose(interactor);
 
-							//If pose has position then rate by distance?
-							if (pose._hasPosition)
-							{
-								//Check distance is less than closest one
-								float distance = Vector3.SqrMagnitude(pose._worldPosition - interactorPosition);
+							//Check distance is less than closest one
+							float distance = Vector3.SqrMagnitude(handPose.transform.position - interactorPosition);
 
-								if (bestPoser == null || distance < closestPoseDistSqr)
-								{
-									bestPoser = _posers[i];
-								}
-							}
-							else
+							if (bestPoser == null || distance < closestPoseDistSqr)
 							{
-								//Otherwise??
-								if (bestPoser == null)
-								{
-									bestPoser = _posers[i];
-								}
+								bestPoser = _poses[i];
 							}
+
+							//TO DO! also check rotation (favour poses closer to interactor rotation too)
 						}
 					}
 
