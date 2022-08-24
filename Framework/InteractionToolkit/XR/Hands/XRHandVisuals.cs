@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.XR;
 
 namespace Framework
 {
@@ -21,7 +20,7 @@ namespace Framework
 				// <summary>
 				/// Used to define which hand these visuals are relate to (left or right).
 				/// </summary>
-				public abstract XRNode XRNode
+				public abstract HandFlags HandFlags
 				{
 					get;
 				}
@@ -29,7 +28,7 @@ namespace Framework
 				#region Virtual Interface
 				public abstract void ApplyOverridePose(XRHandPose handPose);
 
-				public abstract void ClearOverridePose(XRHandPose handPose);
+				public abstract void ClearOverridePose();
 
 				public abstract bool IsEnteringOverridePose();
 

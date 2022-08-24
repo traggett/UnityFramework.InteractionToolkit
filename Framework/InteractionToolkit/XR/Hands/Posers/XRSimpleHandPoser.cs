@@ -19,46 +19,33 @@ namespace Framework
 				/// </summary>
 				public bool _constrainRotation;
 				/// <summary>
-				/// Optional animation that will play on the interacting Hand if it's the left hand.
+				/// Optional animation that will play on the interacting Hand
 				/// </summary>
-				public AnimationClip _leftHandPoseAnimation;
-				/// <summary>
-				/// Optional animation that will play on the interacting Hand if it's the right hand.
-				/// </summary>
-				public AnimationClip _rightHandPoseAnimation;
-				#endregion
-
-				#region Private Data
-				private readonly XRHandPose _pose = new XRHandPose();
+				public AnimationClip _handPoseAnimation;
 				#endregion
 
 				#region XRHandPoser
-				public override XRHandPose GetPose(IXRHandInteractor interactor, IXRInteractable interactable)
+				public override XRHandPose GeneratePose(IXRHandInteractor interactor, IXRInteractable interactable)
 				{
-					_pose._hasRotation = _constrainRotation;
+					XRHandPose pose = new XRHandPose();
+
+					pose._hasRotation = _constrainRotation;
 
 					if (_constrainRotation)
 					{
-						_pose._worldRotation = this.transform.rotation;
+						pose._worldRotation = this.transform.rotation;
 					}
 
-					_pose._hasPosition = _constrainPosition;
+					pose._hasPosition = _constrainPosition;
 
 					if (_constrainPosition)
 					{
-						_pose._worldPosition = this.transform.position;
+						pose._worldPosition = this.transform.position;
 					}
 
-					if (interactor.HandNode == UnityEngine.XR.XRNode.LeftHand)
-					{
-						_pose._animation = _leftHandPoseAnimation;
-					}
-					else
-					{
-						_pose._animation = _rightHandPoseAnimation;
-					}
+					pose._animation = _handPoseAnimation;
 
-					return _pose;
+					return pose;
 				}
 				#endregion
 			}

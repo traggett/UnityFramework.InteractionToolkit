@@ -94,11 +94,11 @@ namespace Framework
 				#endregion
 
 				#region IXRHandInteractor
-				public XRNode HandNode
+				public HandFlags HandFlags
 				{
 					get
 					{
-						return _handVisuals.XRNode;
+						return _handVisuals.HandFlags;
 					}
 				}
 
@@ -118,7 +118,7 @@ namespace Framework
 					//If interactable is a GrabInteractable then calculated the attach offsets to place the hand at the correct pose on grab
 					if (interactable is XRAdvancedGrabInteractable grabInteractable)
 					{
-						XRHandPose pose = poser.GetPose(this, interactable);
+						XRHandPose pose = poser.GeneratePose(this, interactable);
 
 						if (pose._hasRotation)
 						{
@@ -134,11 +134,11 @@ namespace Framework
 					}
 				}
 
-				public void ClearHandPoseOnDropped(XRHandPoser poser)
+				public void ClearHandPoseOnDropped(IXRInteractable interactable)
 				{
-					if (_currentSelectedPoser == poser)
+					if (_currentSelectedPoserInteractable == interactable)
 					{
-						_handVisuals.ClearOverridePose(poser.GetPose(this, _currentSelectedPoserInteractable));
+						_handVisuals.ClearOverridePose();
 						_currentSelectedPoser = null;
 						_currentSelectedPoserInteractable = null;
 					}
@@ -150,11 +150,11 @@ namespace Framework
 					_currentHoveredPoserInteractable = interactable;
 				}
 
-				public void ClearHandPoseOnHovered(XRHandPoser poser)
+				public void ClearHandPoseOnHovered(IXRInteractable interactable)
 				{
-					if (_currentHoveredPoser == poser)
+					if (_currentHoveredPoserInteractable == interactable)
 					{
-						_handVisuals.ClearOverridePose(poser.GetPose(this, _currentHoveredPoserInteractable));
+						_handVisuals.ClearOverridePose();
 						_currentHoveredPoser = null;
 						_currentHoveredPoserInteractable = null;
 					}
@@ -181,7 +181,7 @@ namespace Framework
 							}
 							else
 							{
-								ClearSelectedPose(handPose);
+								ClearSelectedPose();
 							}
 						}
 						//If hovered over interactable with a hand poser...
@@ -196,7 +196,7 @@ namespace Framework
 							}
 							else
 							{
-								ClearHoveredPose(handPose);
+								ClearHoveredPose();
 							}
 						}
 					}
@@ -240,9 +240,9 @@ namespace Framework
 					return true;
 				}
 
-				private void ClearSelectedPose(XRHandPose handPose)
+				private void ClearSelectedPose()
 				{
-					_handVisuals.ClearOverridePose(handPose);
+					_handVisuals.ClearOverridePose();
 
 					_currentSelectedPoser = null;
 
@@ -252,9 +252,9 @@ namespace Framework
 					}
 				}
 
-				private void ClearHoveredPose(XRHandPose handPose)
+				private void ClearHoveredPose()
 				{
-					_handVisuals.ClearOverridePose(handPose);
+					_handVisuals.ClearOverridePose();
 
 					_currentHoveredPoser = null;
 
@@ -266,7 +266,7 @@ namespace Framework
 
 				private XRHandPose GetPose(XRHandPoser handPoser, IXRInteractable interactable)
 				{
-					XRHandPose handPose = handPoser.GetPose(this, interactable);
+					XRHandPose handPose = handPoser.GeneratePose(this, interactable);
 
 					//If interactible is easing in (lerping to position) then ignore position and rotation until its there
 					if (interactable is XRAdvancedGrabInteractable grabInteractable && grabInteractable.IsEasingIn())

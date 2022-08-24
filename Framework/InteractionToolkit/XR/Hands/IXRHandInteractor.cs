@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -8,13 +9,22 @@ namespace Framework
 	{
 		namespace XR
 		{
+			[Flags]
+			public enum HandFlags
+			{
+				None = 0,
+				Left = 1,
+				Right = 2,
+				Both = Left | Right
+			}
+
 			public interface IXRHandInteractor
 			{
 				#region Public Interface
 				/// <summary>
 				/// The XRNode associated with the controller driving this hand interaction.
 				/// </summary>
-				public XRNode HandNode
+				public HandFlags HandFlags
 				{
 					get;
 				}
@@ -29,27 +39,23 @@ namespace Framework
 
 				/// <summary>
 				/// Applys a hand pose from an XRHandPoser when an interactable is grabbed.
-				/// Should be called by a XRHandPoser via a OnGrab event.
 				/// </summary>
 				void ApplyHandPoseOnGrabbed(XRHandPoser poser, IXRInteractable interactable);
 
 				/// <summary>
-				/// Clears a hand pose from an XRHandPoser when an interactable is dropped.
-				/// Should be called by a XRHandPoser via a OnDrop event.
+				/// Clears a hand pose for an interactable when it's dropped.
 				/// </summary>
-				public void ClearHandPoseOnDropped(XRHandPoser poser);
+				public void ClearHandPoseOnDropped(IXRInteractable interactable);
 
 				/// <summary>
 				/// Applys a hand pose from an XRHandPoser when an interactable is hovered.
-				/// Should be called by a XRHandPoser via a HoverEnterEventArgs.
 				/// </summary>
 				public void ApplyHandPoseOnHovered(XRHandPoser poser, IXRInteractable interactable);
 
 				/// <summary>
-				/// Clears a hand pose from an XRHandPoser when an interactable is un-hovered.
-				/// Should be called by a XRHandPoser via a HoverExitEventArgs.
+				/// Clears a hand pose for an interactable when it's un-hovered.
 				/// </summary>
-				public void ClearHandPoseOnHovered(XRHandPoser poser);
+				public void ClearHandPoseOnHovered(IXRInteractable interactable);
 				#endregion
 			}
 		}

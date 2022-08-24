@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace Framework
@@ -7,51 +8,48 @@ namespace Framework
     {
 		namespace XR
 		{
+			[Flags]
+			public enum HandPoseFlags
+			{
+				None = 0,
+				Grab = 1,
+				Hover = 2,
+				Both = Grab | Hover
+			}
+
 			/// <summary>
-			/// Component that forces a hand into a pose or position/rotation whilst
+			/// Component that generates a Hand Pose for a IXRHandInteractor.
 			/// </summary>
 			public abstract class XRHandPoser : MonoBehaviour
 			{
-				#region Public Interface
-				/// <summary>
-				/// Hook this function up to the OnGrab or HoverEnter events on an XRBaseInteractable
-				/// </summary>
-				public void SetHandPose(BaseInteractionEventArgs args)
+				#region Public Data
+				public HandFlags CompatibleHands
 				{
-					if (args.interactorObject is IXRHandInteractor handInteractor)
+					get
 					{
-						if (args is GrabEventArgs)
-						{
-							handInteractor.ApplyHandPoseOnGrabbed(this, args.interactableObject);
-						}
-						else if (args is HoverEnterEventArgs)
-						{
-							handInteractor.ApplyHandPoseOnHovered(this, args.interactableObject);
-						}
+						return _compatibleHands;
 					}
 				}
 
-				/// <summary>
-				/// Hook this function up to the OnDrop or HoverExit event on an XRBaseInteractable
-				/// </summary>
-				public void ClearHandPose(BaseInteractionEventArgs args)
+				public HandPoseFlags PoseFlags
 				{
-					if (args.interactorObject is IXRHandInteractor handInteractor)
+					get
 					{
-						if (args is DropEventArgs)
-						{
-							handInteractor.ClearHandPoseOnDropped(this);
-						}
-						else if (args is HoverExitEventArgs)
-						{
-							handInteractor.ClearHandPoseOnHovered(this);
-						}
+						return _poseFlags;
 					}
 				}
 				#endregion
 
+				#region Private Data
+				[SerializeField]
+				private HandFlags _compatibleHands;
+
+				[SerializeField]
+				private HandPoseFlags _poseFlags;
+				#endregion
+
 				#region Virtual Interface
-				public abstract XRHandPose GetPose(IXRHandInteractor interactor, IXRInteractable interactable);
+				public abstract XRHandPose GeneratePose(IXRHandInteractor interactor, IXRInteractable interactable);
 				#endregion
 			}
 		}

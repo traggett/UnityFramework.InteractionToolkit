@@ -27,23 +27,17 @@ namespace Framework
 				/// </summary
 				public float _radius;
 				/// <summary>
-				/// Optional animation that will play on the interacting Hand if it's the left hand.
+				/// Optional animation that will play on the interacting Hand
 				/// </summary>
-				public AnimationClip _leftHandPoseAnimation;
-				/// <summary>
-				/// Optional animation that will play on the interacting Hand if it's the right hand.
-				/// </summary>
-				public AnimationClip _rightHandPoseAnimation;
-				#endregion
-
-				#region Private Data
-				private readonly XRHandPose _pose = new XRHandPose();
+				public AnimationClip _handPoseAnimation;
 				#endregion
 
 				#region XRHandPoser
-				public override XRHandPose GetPose(IXRHandInteractor interactor, IXRInteractable interactable)
+				public override XRHandPose GeneratePose(IXRHandInteractor interactor, IXRInteractable interactable)
 				{
-					_pose._hasPosition = _constrainPosition;
+					XRHandPose pose = new XRHandPose();
+
+					pose._hasPosition = _constrainPosition;
 
 					if (_constrainPosition)
 					{
@@ -52,35 +46,28 @@ namespace Framework
 						if (_constrainToSurface)
 						{
 							//Find closed point of surface of sphere
-							_pose._worldPosition = this.transform.position + (toCentre.normalized * _radius);
+							pose._worldPosition = this.transform.position + (toCentre.normalized * _radius);
 						}
 						else
 						{
 							if (toCentre.sqrMagnitude > _radius * _radius)
 							{
-								_pose._worldPosition = this.transform.position + (toCentre.normalized * _radius);
+								pose._worldPosition = this.transform.position + (toCentre.normalized * _radius);
 							}
 						}
 					}
 
-					_pose._hasRotation = _constrainRotation;
+					pose._hasRotation = _constrainRotation;
 
 					if (_constrainRotation)
 					{
 						//Rotation faces towards centre?? Plus default rotation??
-						_pose._worldRotation = this.transform.rotation;
+						pose._worldRotation = this.transform.rotation;
 					}
 
-					if (interactor.HandNode == UnityEngine.XR.XRNode.LeftHand)
-					{
-						_pose._animation = _leftHandPoseAnimation;
-					}
-					else
-					{
-						_pose._animation = _rightHandPoseAnimation;
-					}
+					pose._animation = _handPoseAnimation;
 
-					return _pose;
+					return pose;
 				}
 				#endregion
 			}

@@ -30,9 +30,9 @@ namespace Framework
 				public const string ANIM_LAYER_NAME_POSE = "Override Pose";
 
 				/// <summary>
-				/// The node this hand represents (should either be XRNode.LeftHand or XRNode.RightHand)
+				/// Flags for which hand this represents (should either be HandFlags.Left or HandFlags.Right)
 				/// </summary>
-				public XRNode _handNode = XRNode.RightHand;
+				public HandFlags _handFlags = HandFlags.Right;
 
 				/// <summary>
 				/// The root of the hands visuals.
@@ -90,6 +90,7 @@ namespace Framework
 				private AnimatorOverrideController _animatorOverrideController;
 				private List<KeyValuePair<AnimationClip, AnimationClip>> _animatorClipOverrides;
 
+				bool _hasOverridePose;
 				private XRHandPose _overridePose;
 				private float _overridePoseLerp;
 
@@ -125,39 +126,35 @@ namespace Framework
 				#endregion
 
 				#region XRHand
-				public override XRNode XRNode
+				public override HandFlags HandFlags
 				{
 					get
 					{
-						return _handNode;
+						return _handFlags;
 					}
 				}
 
 				public override void ApplyOverridePose(XRHandPose handPose)
 				{
-					if (_overridePose != handPose)
-					{
-						_overridePose = handPose;
-						_overridePoseLerp = 0f;
-					}
+					_hasOverridePose = true;
+					_overridePose = handPose;
+					_overridePoseLerp = 0f;
 				}
 
-				public override void ClearOverridePose(XRHandPose handPose)
+				public override void ClearOverridePose()
 				{
-					if (_overridePose == handPose)
-					{
-						_overridePose = null;
-					}
+					_hasOverridePose = false;
+					_overridePose = default;
 				}
 
 				public override bool IsEnteringOverridePose()
 				{
-					return _overridePose != null && _overridePoseLerp < 1f;
+					return _hasOverridePose && _overridePoseLerp < 1f;
 				}
 
 				public override bool IsReturningFromOverridePose()
 				{
-					return _overridePose == null && _overridePoseLerp > 0f;
+					return _hasOverridePose && _overridePoseLerp > 0f;
 				}
 				#endregion
 
@@ -182,7 +179,7 @@ namespace Framework
 				private void ApplyOverridePose()
 				{
 					//Transiton to / from override pose
-					if (_overridePose != null)
+					if (_hasOverridePose)
 					{
 						//Set the override pose animation (if any)
 						SetCurrentOverridePoseAnimation(_overridePose._animation);
