@@ -156,6 +156,7 @@ namespace Framework
 						if (gameObject.TryGetComponent(out _previewVisuals))
 						{
 							gameObject.name = "PREVIEW HAND POSE VISUALS";
+							gameObject.hideFlags = HideFlags.HideAndDontSave;
 							_previewAnimator = _previewVisuals.GetComponentInChildren<Animator>();
 						}
 						else
