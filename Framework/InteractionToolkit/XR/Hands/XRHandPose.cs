@@ -144,7 +144,6 @@ namespace Framework
 #endif
 				#endregion
 
-
 				#region Private Functions
 #if UNITY_EDITOR
 				private void CreatePreviewVisuals()
