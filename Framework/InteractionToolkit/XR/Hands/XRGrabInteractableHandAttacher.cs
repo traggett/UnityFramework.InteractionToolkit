@@ -89,7 +89,7 @@ namespace Framework
 				#endregion
 
 				#region Virtual Interface
-				protected virtual XRHandPose FindBestPoser(IXRHandInteractor interactor, HandPoseFlags flags)
+				protected virtual XRHandPose FindBestPoser(IXRHandInteractor interactor, HandPoseFlags interactionFlag)
 				{
 					//TO DO! this should be done with rating system - all valid poses rated by closest distance and rotation and best returned
 					XRHandPose bestPoser = null;
@@ -98,14 +98,16 @@ namespace Framework
 					Transform interactorTransform = interactor.Interactor.transform;
 					Vector3 interactorPosition = interactorTransform.position;
 					Quaternion interactorRotation = interactorTransform.rotation;
+					HandFlags interactorHandFlags = interactor.HandFlags;
 
 					for (int i=0; i<_poses.Length; i++)
 					{
 						XRHandPose handPose = _poses[i];
+						HandPoseFlags poseInteractionFlags = handPose.PoseFlags;
+						HandFlags poseHandFlags = handPose.CompatibleHands;
 
 						//First check pose is compatible with interactor hand type (left/right/both etc)
-						if ((flags & handPose.PoseFlags) == flags && 
-							(interactor.HandFlags & handPose.CompatibleHands) == interactor.HandFlags)
+						if (poseInteractionFlags.HasFlag(interactionFlag) && poseHandFlags.HasFlag(interactorHandFlags))
 						{
 							//Then rate according to distance and angle?
 							handPose.GeneratePose(interactor);

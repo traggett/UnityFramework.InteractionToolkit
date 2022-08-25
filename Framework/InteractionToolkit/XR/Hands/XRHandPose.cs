@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
 
 namespace Framework
 {
@@ -14,7 +13,6 @@ namespace Framework
 				None = 0,
 				Grab = 1,
 				Hover = 2,
-				Both = Grab | Hover
 			}
 
 			/// <summary>
