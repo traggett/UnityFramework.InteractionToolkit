@@ -69,7 +69,7 @@ namespace Framework
 				{
 					if (args.interactorObject is IXRHandInteractor handInteractor)
 					{
-						XRHandPose handPoser = FindBestHandPose(handInteractor, HandPoseFlags.Grab);
+						XRHandPose handPoser = FindBestHandPose(handInteractor, HandInteractionFlags.Grab);
 
 						if (handPoser != null)
 						{
@@ -91,7 +91,7 @@ namespace Framework
 				{
 					if (args.interactorObject is IXRHandInteractor handInteractor)
 					{
-						XRHandPose handPoser = FindBestHandPose(handInteractor, HandPoseFlags.Grab);
+						XRHandPose handPoser = FindBestHandPose(handInteractor, HandInteractionFlags.Grab);
 
 						if (handPoser != null)
 						{
@@ -113,7 +113,7 @@ namespace Framework
 				{
 					if (args.interactorObject is IXRHandInteractor handInteractor)
 					{
-						XRHandPose handPoser = FindBestHandPose(handInteractor, HandPoseFlags.Hover);
+						XRHandPose handPoser = FindBestHandPose(handInteractor, HandInteractionFlags.Hover);
 
 						if (handPoser != null)
 						{
@@ -132,7 +132,7 @@ namespace Framework
 				#endregion
 
 				#region Virtual Interface
-				protected virtual XRHandPose FindBestHandPose(IXRHandInteractor interactor, HandPoseFlags interactionFlag)
+				protected virtual XRHandPose FindBestHandPose(IXRHandInteractor interactor, HandInteractionFlags interactionFlag)
 				{
 					//TO DO! this should be done with rating system - all valid poses rated by closest distance and rotation and best returned
 					XRHandPose bestPoser = null;
@@ -146,14 +146,14 @@ namespace Framework
 					for (int i=0; i<_poses.Length; i++)
 					{
 						XRHandPose handPose = _poses[i];
-						HandPoseFlags poseInteractionFlags = handPose.PoseFlags;
+						HandInteractionFlags poseInteractionFlags = handPose.InteractionFlags;
 						HandFlags poseHandFlags = handPose.CompatibleHands;
 
 						//First check pose is compatible with interactor hand type (left/right/both etc)
 						if (poseInteractionFlags.HasFlag(interactionFlag) && poseHandFlags.HasFlag(interactorHandFlags))
 						{
 							//Then rate according to distance and angle?
-							handPose.GeneratePose(interactor);
+							handPose.PreparePose(interactor);
 
 							if (handPose.HasPosition)
 							{
