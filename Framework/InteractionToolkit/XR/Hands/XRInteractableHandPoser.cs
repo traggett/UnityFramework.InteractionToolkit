@@ -8,14 +8,14 @@ namespace Framework
 		namespace XR
 		{
 			/// <summary>
-			/// Component that allows an IXRHandInteractor to grab an XRAdvancedGrabInteractable using one or more different hand poses.
+			/// Component that allows an IXRHandInteractor to grab an XRBaseInteractable using one or more different hand poses.
 			/// These poses are chosen based on conditions like hand type (left/right) and the distance/rotation of the interactor.
 			/// </summary>
-			[RequireComponent(typeof(XRAdvancedGrabInteractable))]
-			public class XRGrabInteractableHandAttacher : MonoBehaviour
+			[RequireComponent(typeof(XRBaseInteractable))]
+			public class XRInteractableHandPoser : MonoBehaviour
 			{
 				#region Protected Data
-				protected XRAdvancedGrabInteractable _interactable;
+				protected XRBaseInteractable _interactable;
 				[SerializeField]
 				protected XRHandPose[] _poses;
 				#endregion
@@ -25,8 +25,17 @@ namespace Framework
 				{
 					if (TryGetComponent(out _interactable))
 					{
-						_interactable.onGrab.AddListener(OnGrab);
-						_interactable.onDrop.AddListener(OnDrop);
+						if (_interactable is XRAdvancedGrabInteractable grabInteractable)
+						{
+							grabInteractable.onGrab.AddListener(OnGrab);
+							grabInteractable.onDrop.AddListener(OnDrop);
+
+						}
+						else
+						{
+							_interactable.selectEntered.AddListener(OnSelected);
+							_interactable.selectExited.AddListener(OnDeselected);
+						}
 
 						_interactable.hoverEntered.AddListener(OnHoverEnter);
 						_interactable.hoverExited.AddListener(OnHoverExit);
@@ -37,6 +46,18 @@ namespace Framework
 				{
 					if (_interactable != null)
 					{
+						if (_interactable is XRAdvancedGrabInteractable grabInteractable)
+						{
+							grabInteractable.onGrab.RemoveListener(OnGrab);
+							grabInteractable.onDrop.RemoveListener(OnDrop);
+
+						}
+						else
+						{
+							_interactable.selectEntered.RemoveListener(OnSelected);
+							_interactable.selectExited.RemoveListener(OnDeselected);
+						}
+
 						_interactable.hoverEntered.RemoveListener(OnHoverEnter);
 						_interactable.hoverExited.RemoveListener(OnHoverExit);
 					}
@@ -48,7 +69,7 @@ namespace Framework
 				{
 					if (args.interactorObject is IXRHandInteractor handInteractor)
 					{
-						XRHandPose handPoser = FindBestPoser(handInteractor, HandPoseFlags.Grab);
+						XRHandPose handPoser = FindBestHandPose(handInteractor, HandPoseFlags.Grab);
 
 						if (handPoser != null)
 						{
@@ -66,11 +87,33 @@ namespace Framework
 					}
 				}
 
+				private void OnSelected(SelectEnterEventArgs args)
+				{
+					if (args.interactorObject is IXRHandInteractor handInteractor)
+					{
+						XRHandPose handPoser = FindBestHandPose(handInteractor, HandPoseFlags.Grab);
+
+						if (handPoser != null)
+						{
+							handInteractor.ApplyHandPoseOnGrabbed(handPoser, _interactable);
+						}
+					}
+				}
+
+
+				private void OnDeselected(SelectExitEventArgs args)
+				{
+					if (args.interactorObject is IXRHandInteractor handInteractor)
+					{
+						handInteractor.ClearHandPoseOnDropped(_interactable);
+					}
+				}
+
 				private void OnHoverEnter(HoverEnterEventArgs args)
 				{
 					if (args.interactorObject is IXRHandInteractor handInteractor)
 					{
-						XRHandPose handPoser = FindBestPoser(handInteractor, HandPoseFlags.Hover);
+						XRHandPose handPoser = FindBestHandPose(handInteractor, HandPoseFlags.Hover);
 
 						if (handPoser != null)
 						{
@@ -89,7 +132,7 @@ namespace Framework
 				#endregion
 
 				#region Virtual Interface
-				protected virtual XRHandPose FindBestPoser(IXRHandInteractor interactor, HandPoseFlags interactionFlag)
+				protected virtual XRHandPose FindBestHandPose(IXRHandInteractor interactor, HandPoseFlags interactionFlag)
 				{
 					//TO DO! this should be done with rating system - all valid poses rated by closest distance and rotation and best returned
 					XRHandPose bestPoser = null;

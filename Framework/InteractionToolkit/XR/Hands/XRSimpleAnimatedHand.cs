@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.XR;
 
 namespace Framework
 {
@@ -93,7 +92,7 @@ namespace Framework
 				private XRHandPose _overridePose;
 				private float _overridePoseLerp;
 
-				private bool _allowOverrideMovement;
+				private bool _ignorePosePosition;
 
 				private float _pointBlend;
 				private float _thumbsUpBlend;
@@ -135,16 +134,21 @@ namespace Framework
 					}
 				}
 
-				public override void ApplyOverridePose(XRHandPose handPose, bool allowMovement)
+				public override void ApplyOverridePose(XRHandPose handPose)
 				{
-					_overridePose = handPose;
-					_overridePoseLerp = 0f;
-					_allowOverrideMovement = allowMovement;
+					if (_overridePose != handPose)
+					{
+						_overridePose = handPose;
+						_overridePoseLerp = 0f;
+					}
 				}
 
-				public override void ClearOverridePose()
+				public override void ClearOverridePose(XRHandPose handPose)
 				{
-					_overridePose = null;
+					if (_overridePose == handPose)
+					{
+						_overridePose = null;
+					}
 				}
 
 				public override bool IsEnteringOverridePose()
@@ -155,6 +159,11 @@ namespace Framework
 				public override bool IsReturningFromOverridePose()
 				{
 					return _overridePose == null && _overridePoseLerp > 0f;
+				}
+
+				public override void SetIgnorePosePosition(bool ignore)
+				{
+					_ignorePosePosition = ignore;
 				}
 				#endregion
 
@@ -191,7 +200,7 @@ namespace Framework
 						}
 
 						//Apply rotation
-						if (_allowOverrideMovement && _overridePose.HasRotation)
+						if (!_ignorePosePosition && _overridePose.HasRotation)
 						{
 							Quaternion targetRotation = GetVisualsWorldRotation(_overridePose);
 
@@ -217,7 +226,7 @@ namespace Framework
 						}
 
 						//Apply position
-						if (_allowOverrideMovement && _overridePose.HasPosition)
+						if (!_ignorePosePosition && _overridePose.HasPosition)
 						{
 							Vector3 targetPosition = GetVisualsWorldPosition(_overridePose);
 

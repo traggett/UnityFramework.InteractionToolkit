@@ -137,7 +137,7 @@ namespace Framework
 						if (pose.HasPosition)
 						{
 							//Find position offset of pose in interactable's own space
-							grabInteractable.InteractorLocalAttachPosition = -grabInteractable.transform.InverseTransformPoint(pose.WorldPosition);
+							grabInteractable.InteractorLocalAttachPosition = -Vector3.Scale(grabInteractable.transform.InverseTransformPoint(pose.WorldPosition), grabInteractable.transform.lossyScale);
 						}
 					}
 				}
@@ -146,7 +146,7 @@ namespace Framework
 				{
 					if (_currentSelectedPoseInteractable == interactable)
 					{
-						_handVisuals.ClearOverridePose();
+						_handVisuals.ClearOverridePose(_currentSelectedPose);
 						_currentSelectedPose = null;
 						_currentSelectedPoseInteractable = null;
 					}
@@ -162,7 +162,7 @@ namespace Framework
 				{
 					if (_currentHoveredPoseInteractable == interactable)
 					{
-						_handVisuals.ClearOverridePose();
+						_handVisuals.ClearOverridePose(_currentHoveredPose);
 						_currentHoveredPose = null;
 						_currentHoveredPoseInteractable = null;
 					}
@@ -184,7 +184,8 @@ namespace Framework
 
 							if (easingIn || IsPoseOk(_currentSelectedPose, _maxSelectedOverridePoseDistance, _maxSelectedOverridePoseRotation))
 							{
-								_handVisuals.ApplyOverridePose(_currentSelectedPose, !easingIn);
+								_handVisuals.ApplyOverridePose(_currentSelectedPose);
+								_handVisuals.SetIgnorePosePosition(easingIn);
 							}
 							else
 							{
@@ -198,7 +199,8 @@ namespace Framework
 
 							if (easingIn || IsPoseOk(_currentHoveredPose, _maxHoveredOverridePoseDistance, _maxHoveredOverridePoseRotation))
 							{
-								_handVisuals.ApplyOverridePose(_currentHoveredPose, !easingIn);
+								_handVisuals.ApplyOverridePose(_currentHoveredPose);
+								_handVisuals.SetIgnorePosePosition(easingIn);
 							}
 							else
 							{
@@ -240,7 +242,7 @@ namespace Framework
 
 				private void ClearSelectedPose()
 				{
-					_handVisuals.ClearOverridePose();
+					_handVisuals.ClearOverridePose(_currentSelectedPose);
 
 					_currentSelectedPose = null;
 
@@ -252,7 +254,7 @@ namespace Framework
 
 				private void ClearHoveredPose()
 				{
-					_handVisuals.ClearOverridePose();
+					_handVisuals.ClearOverridePose(_currentHoveredPose);
 
 					_currentHoveredPose = null;
 

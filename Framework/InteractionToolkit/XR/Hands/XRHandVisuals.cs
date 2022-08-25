@@ -26,13 +26,15 @@ namespace Framework
 				}
 
 				#region Virtual Interface
-				public abstract void ApplyOverridePose(XRHandPose handPose, bool allowMovement);
+				public abstract void ApplyOverridePose(XRHandPose handPose);
 
-				public abstract void ClearOverridePose();
+				public abstract void ClearOverridePose(XRHandPose handPose);
 
 				public abstract bool IsEnteringOverridePose();
 
 				public abstract bool IsReturningFromOverridePose();
+
+				public abstract void SetIgnorePosePosition(bool ignore);
 				#endregion
 
 				#region Protected Functions

@@ -622,6 +622,7 @@ namespace Framework
 				if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic ||
 					updatePhase == XRInteractionUpdateOrder.UpdatePhase.OnBeforeRender)
 				{
+
 					if (m_TrackPosition)
 					{
 						transform.position = m_TargetWorldPosition;
