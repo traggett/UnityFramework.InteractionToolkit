@@ -17,6 +17,7 @@ namespace Framework
 		{
 			#region Private Data
 			private XRUIInputModule _inputModule;
+			private XRBaseInteractable _interactable;
 			private List<XRBaseControllerInteractor> _hoveredInteractors = new List<XRBaseControllerInteractor>();
 			private List<XRBaseControllerInteractor> _presssControllers = new List<XRBaseControllerInteractor>();
 			#endregion
@@ -24,23 +25,19 @@ namespace Framework
 			#region Unity Messages
 			private void Awake()
 			{
-				XRBaseInteractable interactable = GetComponent<XRBaseInteractable>();
-
-				if (interactable != null)
+				if (TryGetComponent(out _interactable))
 				{
-					interactable.hoverEntered.AddListener(OnHoverEnter);
-					interactable.hoverExited.AddListener(OnHoverExit);
+					_interactable.hoverEntered.AddListener(OnHoverEnter);
+					_interactable.hoverExited.AddListener(OnHoverExit);
 				}
 			}
 
 			private void OnDestroy()
 			{
-				XRBaseInteractable interactable = GetComponent<XRBaseInteractable>();
-
-				if (interactable != null)
+				if (_interactable != null)
 				{
-					interactable.hoverEntered.RemoveListener(OnHoverEnter);
-					interactable.hoverExited.RemoveListener(OnHoverExit);
+					_interactable.hoverEntered.RemoveListener(OnHoverEnter);
+					_interactable.hoverExited.RemoveListener(OnHoverExit);
 				}
 			}
 

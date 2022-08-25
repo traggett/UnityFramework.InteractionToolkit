@@ -154,7 +154,7 @@ namespace Framework
 
 				public override bool IsReturningFromOverridePose()
 				{
-					return _overridePose != null && _overridePoseLerp > 0f;
+					return _overridePose == null && _overridePoseLerp > 0f;
 				}
 				#endregion
 

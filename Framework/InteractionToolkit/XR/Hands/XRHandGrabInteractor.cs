@@ -64,14 +64,24 @@ namespace Framework
 				{
 					//Don't allow hovering on returning from an override pose.
 					//eg if a pose was too far way from the interacble and the interaction was cancelled, dont allow hovering objects whilst the pose is transitoned back to the interactor.
-					return !_handVisuals.IsReturningFromOverridePose() && base.CanHover(interactable);
+					if (_handVisuals.IsReturningFromOverridePose())
+						return false;
+
+					return base.CanHover(interactable);
 				}
 
 				public override bool CanSelect(IXRSelectInteractable interactable)
 				{
 					//Don't allow selecting on returning from an override pose.
 					//eg if a pose was too far way from the interacble and the interaction was cancelled, dont allow hovering objects whilst the pose is transitoned back to the interactor.
-					return !_handVisuals.IsReturningFromOverridePose() && base.CanSelect(interactable) && (xrController.selectInteractionState.activatedThisFrame || selectTarget == interactable);
+					if (_handVisuals.IsReturningFromOverridePose())
+						return false;
+
+					//Only allow selecting on pressing down this frame or if already selecting the interactible
+					if (!xrController.selectInteractionState.activatedThisFrame && !interactablesSelected.Contains(interactable))
+						return false;
+
+					return base.CanSelect(interactable);
 				}
 
 				public override void ProcessInteractor(XRInteractionUpdateOrder.UpdatePhase updatePhase)

@@ -23,9 +23,7 @@ namespace Framework
 				#region Unity Messages
 				protected virtual void Awake()
 				{
-					_interactable = GetComponent<XRAdvancedGrabInteractable>();
-
-					if (_interactable != null)
+					if (TryGetComponent(out _interactable))
 					{
 						_interactable.onGrab.AddListener(OnGrab);
 						_interactable.onDrop.AddListener(OnDrop);
@@ -93,6 +91,7 @@ namespace Framework
 				#region Virtual Interface
 				protected virtual XRHandPose FindBestPoser(IXRHandInteractor interactor, HandPoseFlags flags)
 				{
+					//TO DO! this should be done with rating system - all valid poses rated by closest distance and rotation and best returned
 					XRHandPose bestPoser = null;
 					float closestPoseDistSqr = float.MaxValue;
 
@@ -105,18 +104,28 @@ namespace Framework
 						XRHandPose handPose = _poses[i];
 
 						//First check pose is compatible with interactor hand type (left/right/both etc)
-						if ((handPose.PoseFlags & flags) == flags && 
-							(handPose.CompatibleHands & interactor.HandFlags) == interactor.HandFlags)
+						if ((flags & handPose.PoseFlags) == flags && 
+							(interactor.HandFlags & handPose.CompatibleHands) == interactor.HandFlags)
 						{
 							//Then rate according to distance and angle?
 							handPose.GeneratePose(interactor);
 
-							//Check distance is less than closest one
-							float distance = Vector3.SqrMagnitude(handPose.transform.position - interactorPosition);
-
-							if (bestPoser == null || distance < closestPoseDistSqr)
+							if (handPose.HasPosition)
 							{
-								bestPoser = _poses[i];
+								//Check distance is less than closest one
+								float distance = Vector3.SqrMagnitude(handPose.transform.position - interactorPosition);
+
+								if (bestPoser == null || distance < closestPoseDistSqr)
+								{
+									bestPoser = _poses[i];
+								}
+							}
+							else
+							{
+								if (bestPoser == null)
+								{
+									bestPoser = _poses[i];
+								}
 							}
 
 							//TO DO! also check rotation (favour poses closer to interactor rotation too)
