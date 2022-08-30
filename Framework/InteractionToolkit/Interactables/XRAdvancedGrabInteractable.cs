@@ -791,7 +791,7 @@ namespace Framework
 			/// <seealso cref="Drop"/>
 			protected virtual void Detach()
 			{
-				if (m_ThrowOnDetach)
+				if (m_ThrowOnDetach && !m_Rigidbody.isKinematic)
 				{
 					m_Rigidbody.velocity = m_DetachVelocity;
 					m_Rigidbody.angularVelocity = m_DetachAngularVelocity;
