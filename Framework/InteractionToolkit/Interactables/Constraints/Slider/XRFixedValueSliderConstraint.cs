@@ -42,7 +42,7 @@ namespace Framework
 				}
 				set
 				{
-					if (0 < value && value < _allowedSliderPositions.Length)
+					if (0 <= value && value < _allowedSliderPositions.Length)
 					{
 						float normalisedPos = _allowedSliderPositions[value];
 						SetSliderSpacePosInstantaneous(normalisedPos * _sliderSize);
