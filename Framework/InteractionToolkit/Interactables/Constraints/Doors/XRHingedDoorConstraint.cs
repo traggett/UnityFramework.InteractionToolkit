@@ -71,7 +71,10 @@ namespace Framework
 
 					this.transform.localRotation = Quaternion.Euler(0f, localAngle, 0f);
 
-					rigidbody.angularVelocity = ConstraintToWorldSpaceVector(localAngularVel);
+					if (!rigidbody.isKinematic)
+					{
+						rigidbody.angularVelocity = ConstraintToWorldSpaceVector(localAngularVel);
+					}
 				}
 			}
 			#endregion

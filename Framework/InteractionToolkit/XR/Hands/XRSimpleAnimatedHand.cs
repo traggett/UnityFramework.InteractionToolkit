@@ -81,7 +81,7 @@ namespace Framework
 				#endregion
 
 				#region Private Data
-				private int _animLayerIndexPose = -1;
+				private int _animLayerIndexOverridePose = -1;
 				private int _animParamIndexFist = -1;
 				private int _animParamIndexPoint = -1;
 				private int _animParamIndexPose = -1;
@@ -101,17 +101,17 @@ namespace Framework
 				#region Unity Messages
 				private void Start()
 				{
-					// Get animator layer indices by name, for later use switching between hand visuals
-					_animLayerIndexPose = _animator.GetLayerIndex(ANIM_LAYER_NAME_POSE);
-					_animParamIndexFist = Animator.StringToHash(ANIM_PARAM_NAME_FIST);
-					_animParamIndexPoint = Animator.StringToHash(ANIM_PARAM_NAME_POINT);
-					_animParamIndexPose = Animator.StringToHash(ANIM_PARAM_NAME_POSE);
-
 					_animatorOverrideController = new AnimatorOverrideController(_animator.runtimeAnimatorController);
 					_animator.runtimeAnimatorController = _animatorOverrideController;
 
 					_animatorClipOverrides = new List<KeyValuePair<AnimationClip, AnimationClip>>(_animatorOverrideController.overridesCount);
 					_animatorOverrideController.GetOverrides(_animatorClipOverrides);
+
+					_animLayerIndexOverridePose = _animator.GetLayerIndex(ANIM_LAYER_NAME_POSE);
+
+					_animParamIndexFist = Animator.StringToHash(ANIM_PARAM_NAME_FIST);
+					_animParamIndexPoint = Animator.StringToHash(ANIM_PARAM_NAME_POINT);
+					_animParamIndexPose = Animator.StringToHash(ANIM_PARAM_NAME_POSE);
 				}
 
 				private void Update()
@@ -278,7 +278,7 @@ namespace Framework
 						}
 					}
 
-					_animator.SetLayerWeight(_animLayerIndexPose, _overridePoseLerp);
+					_animator.SetLayerWeight(_animLayerIndexOverridePose, _overridePoseLerp);
 				}
 
 				private AnimationClip GetOverrideClip(AnimationClip animationClip)
@@ -300,7 +300,7 @@ namespace Framework
 				{
 					if (animationClip != null)
 					{
-						float layerWeight = _animator.GetLayerWeight(_animLayerIndexPose);
+						float layerWeight = _animator.GetLayerWeight(_animLayerIndexOverridePose);
 
 						//If not currently playing an override pose...
 						if (layerWeight <= 0f)

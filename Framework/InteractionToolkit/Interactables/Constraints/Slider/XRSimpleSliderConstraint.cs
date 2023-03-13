@@ -177,8 +177,11 @@ namespace Framework
 
 					this.transform.localPosition = localPos;
 
-					rigidbody.velocity = ConstraintToWorldSpaceVector(localVelocity);
-					rigidbody.angularVelocity = Vector3.zero;
+					if (!rigidbody.isKinematic)
+					{
+						rigidbody.velocity = ConstraintToWorldSpaceVector(localVelocity);
+						rigidbody.angularVelocity = Vector3.zero;
+					}
 				}
 			}
 

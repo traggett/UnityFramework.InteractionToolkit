@@ -37,8 +37,11 @@ namespace Framework
 
 				//TO DO!
 				//Allow rotation only!
-				rigidbody.velocity = Vector3.zero;
-				rigidbody.angularVelocity = Vector3.zero;
+				if (!rigidbody.isKinematic)
+				{
+					rigidbody.velocity = Vector3.zero;
+					rigidbody.angularVelocity = Vector3.zero;
+				}
 			}
 			#endregion
 
