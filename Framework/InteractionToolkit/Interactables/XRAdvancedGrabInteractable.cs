@@ -322,6 +322,32 @@ namespace Framework
 				set => m_ThrowAngularVelocityScale = value;
 			}
 
+			[SerializeField]
+			float m_ThrowMaxVelocity = -1f;
+
+			/// <summary>
+			/// The max velocity the object can be thrown with (ignored if less than zero).
+			/// </summary>
+			/// <seealso cref="throwOnDetach"/>
+			public float throwMaxVelocity
+			{
+				get => m_ThrowMaxVelocity;
+				set => m_ThrowMaxVelocity = value;
+			}
+
+			[SerializeField]
+			float m_ThrowMaxAngularVelocity = -1f;
+
+			/// <summary>
+			/// The max angular velocity the object can be thrown with (ignored if less than zero).
+			/// </summary>
+			/// <seealso cref="throwOnDetach"/>
+			public float throwMaxAngularVelocity
+			{
+				get => m_ThrowMaxAngularVelocity;
+				set => m_ThrowMaxAngularVelocity = value;
+			}
+
 			[SerializeField, FormerlySerializedAs("m_GravityOnDetach")]
 			bool m_ForceGravityOnDetach;
 
@@ -471,7 +497,7 @@ namespace Framework
 						if (IsAttachedToInteractor())
 						{
 							var interactor = interactorsSelecting[0];
-							
+
 							UpdateTarget(interactor, Time.deltaTime);
 							SmoothVelocityUpdate(interactor);
 
@@ -856,8 +882,20 @@ namespace Framework
 				{
 					var smoothedVelocity = GetSmoothedVelocityValue(m_ThrowSmoothingVelocityFrames);
 					var smoothedAngularVelocity = GetSmoothedVelocityValue(m_ThrowSmoothingAngularVelocityFrames);
+
 					m_DetachVelocity = smoothedVelocity * m_ThrowVelocityScale;
+
+					if (m_ThrowMaxVelocity > 0f && m_DetachVelocity.sqrMagnitude > m_ThrowMaxVelocity * m_ThrowMaxVelocity)
+					{
+						m_DetachVelocity = m_DetachVelocity.normalized * m_ThrowMaxVelocity;
+					}
+
 					m_DetachAngularVelocity = smoothedAngularVelocity * m_ThrowAngularVelocityScale;
+
+					if (m_ThrowMaxAngularVelocity > 0f && m_DetachAngularVelocity.sqrMagnitude > m_ThrowMaxAngularVelocity * m_ThrowMaxAngularVelocity)
+					{
+						m_DetachAngularVelocity = m_DetachAngularVelocity.normalized * m_ThrowMaxAngularVelocity;
+					}
 				}
 
 				ClearTeleportationProvider();
